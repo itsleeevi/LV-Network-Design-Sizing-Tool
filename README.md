@@ -13,13 +13,13 @@ A visual electrical schematic editor built with Next.js and React Flow. Design, 
 
 ## Tech Stack
 
-| Layer | Library |
-|---|---|
-| Framework | [Next.js 16](https://nextjs.org) |
-| Canvas | [React Flow](https://reactflow.dev) |
-| State | [Zustand](https://zustand-demo.pmnd.rs) |
-| UI | [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS |
-| Language | TypeScript |
+| Layer     | Library                                           |
+| --------- | ------------------------------------------------- |
+| Framework | [Next.js 16](https://nextjs.org)                  |
+| Canvas    | [React Flow](https://reactflow.dev)               |
+| State     | [Zustand](https://zustand-demo.pmnd.rs)           |
+| UI        | [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS |
+| Language  | TypeScript                                        |
 
 ## Getting Started
 
@@ -42,4 +42,3 @@ store/        # Zustand global state (flow-store.ts)
 lib/          # Calculations and auto-layout logic
 types/        # TypeScript types for electrical nodes and edges
 ```
-# electrical-wiring-designer
