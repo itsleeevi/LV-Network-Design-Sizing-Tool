@@ -22,6 +22,8 @@ import {
   COMMON_DEVICES,
   ALUMINIUM_CABLE,
 } from "@/types/electrical";
+import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
+import { useT, useElementName } from "@/lib/i18n";
 import { X, Trash2, Plus } from "lucide-react";
 
 function DeviceRow({
@@ -35,42 +37,56 @@ function DeviceRow({
   onUpdate: (index: number, device: Device) => void;
   onDelete: (index: number) => void;
 }) {
+  const t = useT();
   return (
-    <div className="flex items-center gap-1">
+    <div className="space-y-1 rounded border p-1.5">
+      <div className="flex items-center gap-1">
+        <Input
+          value={device.type}
+          placeholder={t("device.type")}
+          className="h-8 flex-1 text-sm"
+          onChange={(e) => onUpdate(index, { ...device, type: e.target.value })}
+        />
+        <Input
+          type="number"
+          min={0}
+          step={0.01}
+          value={device.current}
+          className="h-8 w-14 text-sm"
+          onChange={(e) =>
+            onUpdate(index, { ...device, current: parseFloat(e.target.value) || 0 })
+          }
+        />
+        <span className="text-xs text-muted-foreground">A</span>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(index)}
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+        >
+          <X className="h-3 w-3" />
+        </Button>
+      </div>
       <Input
-        value={device.type}
-        placeholder="Típus"
-        className="h-8 flex-1 text-sm"
-        onChange={(e) => onUpdate(index, { ...device, type: e.target.value })}
+        value={device.kmMarker ?? ""}
+        placeholder={t("device.km")}
+        className="h-7 text-xs"
+        onChange={(e) => onUpdate(index, { ...device, kmMarker: e.target.value })}
       />
-      <Input
-        type="number"
-        min={0}
-        step={0.01}
-        value={device.current}
-        className="h-8 w-16 text-sm"
-        onChange={(e) =>
-          onUpdate(index, { ...device, current: parseFloat(e.target.value) || 0 })
-        }
-      />
-      <span className="text-xs text-muted-foreground">A</span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => onDelete(index)}
-        className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-      >
-        <X className="h-3 w-3" />
-      </Button>
     </div>
   );
 }
 
 function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNodeData }) {
+  const t = useT();
+  const elementName = useElementName();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const deleteNode = useFlowStore((s) => s.deleteNode);
+  const nodes = useFlowStore((s) => s.nodes);
+  const edges = useFlowStore((s) => s.edges);
 
   const devices = data.devices || [];
+  const autoTag = resolveDesignationTag(undefined, getDownstreamChildLabels(nodeId, nodes, edges));
 
   const handleUpdateDevice = (index: number, device: Device) => {
     const newDevices = [...devices];
@@ -91,7 +107,7 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Szekrény</h3>
+        <h3 className="font-semibold">{t("cabinet.title")}</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -103,16 +119,45 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="label">Megnevezés</Label>
+        <Label htmlFor="label">{t("field.label")}</Label>
         <Input
           id="label"
-          value={data.label}
+          value={elementName(data.label, "cabinet")}
           onChange={(e) => updateNodeData(nodeId, { label: e.target.value })}
         />
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="side">Oldal</Label>
+        <Label htmlFor="kmMarker">{t("field.position")}</Label>
+        <Input
+          id="kmMarker"
+          value={data.kmMarker ?? ""}
+          placeholder={t("field.positionPlaceholder")}
+          onChange={(e) => updateNodeData(nodeId, { kmMarker: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="tag">{t("field.tag")}</Label>
+        <Input
+          id="tag"
+          value={data.tag ?? ""}
+          placeholder={autoTag || t("tag.placeholderNone")}
+          onChange={(e) => updateNodeData(nodeId, { tag: e.target.value })}
+        />
+        <p className="text-xs text-muted-foreground">
+          {autoTag ? (
+            <>
+              {t("tag.autoHint")} <span className="font-mono">{autoTag}</span>
+            </>
+          ) : (
+            t("tag.noneHint")
+          )}
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="side">{t("field.side")}</Label>
         <Select
           value={data.side || "none"}
           onValueChange={(v) =>
@@ -120,19 +165,19 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
           }
         >
           <SelectTrigger>
-            <SelectValue placeholder="Válassz..." />
+            <SelectValue placeholder={t("field.choose")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">-</SelectItem>
-            <SelectItem value="bal">Bal</SelectItem>
-            <SelectItem value="jobb">Jobb</SelectItem>
+            <SelectItem value="bal">{t("side.left")}</SelectItem>
+            <SelectItem value="jobb">{t("side.right")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label>Berendezés / Áram [A]</Label>
+          <Label>{t("cabinet.devices")}</Label>
           <Button
             variant="outline"
             size="sm"
@@ -140,7 +185,7 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
             className="h-7 px-2"
           >
             <Plus className="mr-1 h-3 w-3" />
-            Új
+            {t("common.new")}
           </Button>
         </div>
 
@@ -157,7 +202,7 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">Nincs berendezés</p>
+          <p className="text-xs text-muted-foreground">{t("cabinet.noDevices")}</p>
         )}
 
         {/* Quick add presets */}
@@ -183,30 +228,30 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
         data.shortCircuitCurrent !== undefined ||
         data.cumulativeVoltageDrop !== undefined) && (
         <div className="rounded-md border bg-muted/50 p-2 space-y-1">
-          <h4 className="text-xs font-medium text-muted-foreground">Számított értékek</h4>
+          <h4 className="text-xs font-medium text-muted-foreground">{t("calc.title")}</h4>
           {data.ownCurrent !== undefined && (
             <div className="text-sm">
-              Áram [A]: <span className="font-medium">{data.ownCurrent.toFixed(2)}</span>
+              {t("calc.current")}: <span className="font-medium">{data.ownCurrent.toFixed(2)}</span>
             </div>
           )}
           {data.totalCurrent !== undefined && (
             <div className="text-sm">
-              Áram összesen [A]: <span className="font-medium">{data.totalCurrent.toFixed(2)}</span>
+              {t("calc.totalCurrent")}: <span className="font-medium">{data.totalCurrent.toFixed(2)}</span>
             </div>
           )}
           {data.cumulativeVoltageDrop !== undefined && (
             <div className="text-sm">
-              Fesz esés: <span className="font-medium">{data.cumulativeVoltageDrop.toFixed(1)}</span>
+              {t("calc.voltageDrop")}: <span className="font-medium">{data.cumulativeVoltageDrop.toFixed(1)}</span>
             </div>
           )}
           {data.loopImpedance !== undefined && (
             <div className="text-sm">
-              Hurok IMP: <span className="font-medium">{data.loopImpedance.toFixed(1)}</span>
+              {t("calc.loopImpedance")}: <span className="font-medium">{data.loopImpedance.toFixed(1)}</span>
             </div>
           )}
           {data.shortCircuitCurrent !== undefined && (
             <div className="text-sm">
-              Iz [A]: <span className="font-medium">{data.shortCircuitCurrent.toFixed(1)}</span>
+              {t("calc.iz")}: <span className="font-medium">{data.shortCircuitCurrent.toFixed(1)}</span>
             </div>
           )}
         </div>
@@ -216,14 +261,15 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
 }
 
 function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) {
+  const t = useT();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
   return (
     <div className="space-y-3">
-      <h3 className="font-semibold">Áramszolgáltató (ÁSZ)</h3>
+      <h3 className="font-semibold">{t("asz.title")}</h3>
 
       <div className="space-y-2">
-        <Label htmlFor="voltage">Hálózati feszültség (V)</Label>
+        <Label htmlFor="voltage">{t("asz.voltage")}</Label>
         <Input
           id="voltage"
           type="number"
@@ -237,7 +283,7 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="shortCircuitPower">Rövidzárlati teljesítmény (MVA)</Label>
+        <Label htmlFor="shortCircuitPower">{t("asz.scPower")}</Label>
         <Input
           id="shortCircuitPower"
           type="number"
@@ -251,7 +297,7 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="allowedVoltageDrop">Megengedett fesz esés ε [%]</Label>
+        <Label htmlFor="allowedVoltageDrop">{t("asz.allowedDrop")}</Label>
         <Input
           id="allowedVoltageDrop"
           type="number"
@@ -277,13 +323,15 @@ function FmFeProperties({
   data: FmNodeData | FeNodeData;
   type: "fm" | "fe" | "feed";
 }) {
+  const t = useT();
+  const elementName = useElementName();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const deleteNode = useFlowStore((s) => s.deleteNode);
 
   const titles = {
-    fm: "Főmérő (FM)",
-    fe: "Főelosztó (FE)",
-    feed: "Betáplálás (FM)",
+    fm: t("node.fm"),
+    fe: t("node.fe"),
+    feed: t("node.feed"),
   };
 
   return (
@@ -301,10 +349,10 @@ function FmFeProperties({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="label">Név</Label>
+        <Label htmlFor="label">{t("field.name")}</Label>
         <Input
           id="label"
-          value={data.label}
+          value={type === "fe" ? data.label : elementName(data.label, "fm")}
           onChange={(e) => updateNodeData(nodeId, { label: e.target.value })}
         />
       </div>
@@ -313,7 +361,7 @@ function FmFeProperties({
         <>
 
           <div className="space-y-2">
-            <Label htmlFor="side">Oldal</Label>
+            <Label htmlFor="side">{t("field.side")}</Label>
             <Select
               value={data.side || "none"}
               onValueChange={(v) =>
@@ -321,12 +369,12 @@ function FmFeProperties({
               }
             >
               <SelectTrigger>
-                <SelectValue placeholder="Válassz..." />
+                <SelectValue placeholder={t("field.choose")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">-</SelectItem>
-                <SelectItem value="bal">Bal</SelectItem>
-                <SelectItem value="jobb">Jobb</SelectItem>
+                <SelectItem value="bal">{t("side.left")}</SelectItem>
+                <SelectItem value="jobb">{t("side.right")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -337,13 +385,14 @@ function FmFeProperties({
 }
 
 function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData }) {
+  const t = useT();
   const updateEdgeData = useFlowStore((s) => s.updateEdgeData);
   const deleteEdge = useFlowStore((s) => s.deleteEdge);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold">Kábel</h3>
+        <h3 className="font-semibold">{t("cable.title")}</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -355,7 +404,7 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="length">Kábel hossza [m]</Label>
+        <Label htmlFor="length">{t("cable.length")}</Label>
         <Input
           id="length"
           type="number"
@@ -368,13 +417,13 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
 
       <div className="rounded-md border bg-muted/40 px-2.5 py-2 text-xs leading-snug text-muted-foreground">
         <p className="font-medium text-foreground">
-          AL fajlagos ellenállása Ω mm² / m
+          {t("cable.resistivity")}
         </p>
         <p className="mt-0.5 font-mono">{ALUMINIUM_CABLE.resistivityOhmMm2PerM}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="crossSection">Választott kábel keresztmetszete [mm²]</Label>
+        <Label htmlFor="crossSection">{t("cable.crossSection")}</Label>
         <Select
           value={String(data.crossSection)}
           onValueChange={(v) => updateEdgeData(edgeId, { crossSection: parseFloat(v) })}
@@ -398,15 +447,15 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
         data.voltageDropV !== undefined ||
         data.impedance !== undefined) && (
         <div className="rounded-md border bg-muted/50 p-2 space-y-1">
-          <h4 className="text-xs font-medium text-muted-foreground">Számított értékek</h4>
+          <h4 className="text-xs font-medium text-muted-foreground">{t("calc.title")}</h4>
           {data.current !== undefined && data.current > 0 && (
             <div className="text-sm">
-              Áram összesen [A]: <span className="font-medium">{data.current.toFixed(2)}</span>
+              {t("calc.totalCurrent")}: <span className="font-medium">{data.current.toFixed(2)}</span>
             </div>
           )}
           {data.requiredCrossSection !== undefined && data.requiredCrossSection > 0 && (
             <div className="text-sm">
-              Szükséges minimális keresztmetszet [mm²]:{" "}
+              {t("cable.minCrossSection")}:{" "}
               <span
                 className={
                   data.requiredCrossSection > (data.crossSection || 0)
@@ -420,17 +469,22 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
           )}
           {data.voltageDropV !== undefined && (
             <div className="text-sm">
-              Választott kábel Fesz esés ε [V]: <span className="font-medium">{data.voltageDropV.toFixed(2)}</span>
+              {t("cable.dropV")}: <span className="font-medium">{data.voltageDropV.toFixed(2)}</span>
             </div>
           )}
           {data.voltageDropPercent !== undefined && (
             <div className="text-sm">
-              Választott kábel Fesz esés ε [%]: <span className="font-medium">{data.voltageDropPercent.toFixed(2)}</span>
+              {t("cable.dropPercent")}: <span className="font-medium">{data.voltageDropPercent.toFixed(2)}</span>
             </div>
           )}
           {data.impedance !== undefined && (
             <div className="text-sm">
-              Számított hurok-impedancia (Rh): [Ω]: <span className="font-medium">{data.impedance.toFixed(3)}</span>
+              {t("cable.impedance")}: <span className="font-medium">{data.impedance.toFixed(3)}</span>
+            </div>
+          )}
+          {data.shortCircuitCurrent !== undefined && data.shortCircuitCurrent > 0 && (
+            <div className="text-sm">
+              {t("cable.iz")}: <span className="font-medium">{data.shortCircuitCurrent.toFixed(1)}</span>
             </div>
           )}
         </div>
@@ -440,6 +494,7 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
 }
 
 export function PropertySidebar() {
+  const t = useT();
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
   const selectedNodeId = useFlowStore((s) => s.selectedNodeId);
@@ -450,18 +505,16 @@ export function PropertySidebar() {
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
   const selectedEdge = selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
 
+  // Only mount the sidebar when something is selected; clicking empty space
+  // clears the selection (see onPaneClick) which removes the panel entirely.
   if (!selectedNode && !selectedEdge) {
-    return (
-      <div className="w-72 border-l bg-background p-4">
-        <p className="text-sm text-muted-foreground">Válassz ki egy elemet a szerkesztéshez</p>
-      </div>
-    );
+    return null;
   }
 
   return (
     <div className="w-72 border-l bg-background p-4 overflow-y-auto">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Tulajdonságok</span>
+        <span className="text-xs text-muted-foreground">{t("sidebar.properties")}</span>
         <Button
           variant="ghost"
           size="sm"

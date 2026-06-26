@@ -16,6 +16,8 @@ import {
   labelOffsetClass,
   type LabelPlacement,
 } from "@/lib/cabinet-label-placement";
+import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
+import { useT, useSideLabel, useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 function SideHandle({
@@ -46,6 +48,7 @@ function CabinetRenameField({
   onCommit: () => void;
   onCancel: () => void;
 }) {
+  const t = useT();
   const widthCh = Math.max(draft.length, 1) + 0.5;
 
   return (
@@ -76,7 +79,7 @@ function CabinetRenameField({
         }}
         style={{ width: `${widthCh}ch` }}
         className="block border-0 bg-transparent p-0 text-center text-sm leading-snug text-red-600 outline-none ring-0 focus:ring-0"
-        aria-label="Szekrény neve"
+        aria-label={t("cabinet.nameAria")}
       />
     </div>
   );
@@ -85,13 +88,19 @@ function CabinetRenameField({
 /** Multi-line cabinet info display */
 function CabinetInfo({
   data,
+  displayLabel,
+  tag,
   placement,
   onStartEdit,
 }: {
   data: CabinetNodeData;
+  displayLabel: string;
+  tag: string;
   placement: LabelPlacement;
   onStartEdit: (event: React.MouseEvent) => void;
 }) {
+  const t = useT();
+  const sideLabel = useSideLabel();
   const align =
     placement === "left"
       ? "text-right"
@@ -113,35 +122,42 @@ function CabinetInfo({
           "cursor-text hover:bg-red-50",
           align,
         )}
-        title="Kattints az átnevezéshez"
+        title={t("cabinet.renameTitle")}
       >
-        {data.label}
+        {displayLabel}
       </button>
 
-      {/* Side */}
-      {data.side && <div>{data.side}</div>}
+      {/* Chainage / position marker (shown exactly as entered) */}
+      {data.kmMarker && <div>{data.kmMarker}</div>}
 
-      {/* Devices list - Berendezés / Áram [A] */}
+      {/* Side */}
+      {data.side && <div>{sideLabel(data.side)} {t("unit.side")}</div>}
+
+      {/* Designation tag — downstream out-directions, or custom override */}
+      {tag && <div>{tag}</div>}
+
+      {/* Devices list - Berendezés (km szelvény / Áram) */}
       {devices.map((dev, i) => (
         <div key={i}>
-          {dev.type} {dev.current}A
+          {dev.type}
+          {dev.kmMarker ? ` (${dev.kmMarker} ${t("unit.kmsz")})` : dev.current ? ` ${dev.current}A` : ""}
         </div>
       ))}
 
       {/* Calculated values (matches Excel summary table T-AD rows 4-6) */}
       {data.cumulativeVoltageDrop !== undefined && data.cumulativeVoltageDrop > 0 && (
         <div className="font-medium text-blue-600">
-          Fesz esés: {data.cumulativeVoltageDrop.toFixed(1)}
+          {t("calc.voltageDrop")}: {data.cumulativeVoltageDrop.toFixed(1)}
         </div>
       )}
       {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
         <div className="font-medium text-blue-600">
-          Hurok IMP: {data.loopImpedance.toFixed(3)}
+          {t("calc.loopImpedance")}: {data.loopImpedance.toFixed(3)}
         </div>
       )}
       {data.shortCircuitCurrent !== undefined && data.shortCircuitCurrent > 0 && (
         <div className="font-medium text-blue-600">
-          Iz [A]: {data.shortCircuitCurrent.toFixed(1)}
+          {t("calc.iz")}: {data.shortCircuitCurrent.toFixed(1)}
         </div>
       )}
     </div>
@@ -149,7 +165,9 @@ function CabinetInfo({
 }
 
 export function CabinetNode({ id, data, selected }: NodeProps) {
+  const elementName = useElementName();
   const d = data as CabinetNodeData;
+  const displayLabel = elementName(d.label, "cabinet");
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
   const canvasMode = useFlowStore((s) => s.canvasMode);
@@ -171,6 +189,11 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
   const labelPlacement = useMemo(
     () => getLabelPlacement(connectedSides),
     [connectedSides],
+  );
+
+  const tag = useMemo(
+    () => resolveDesignationTag(d.tag, getDownstreamChildLabels(id, nodes, edges)),
+    [d.tag, id, nodes, edges],
   );
 
   useEffect(() => {
@@ -196,10 +219,10 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
   const startEdit = useCallback(
     (event: React.MouseEvent) => {
       event.stopPropagation();
-      setDraft(d.label);
+      setDraft(displayLabel);
       setEditing(true);
     },
-    [d.label],
+    [displayLabel],
   );
 
   const handleClick = (e: React.MouseEvent) => {
@@ -257,6 +280,8 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
         >
           <CabinetInfo
             data={d}
+            displayLabel={displayLabel}
+            tag={tag}
             placement={labelPlacement}
             onStartEdit={startEdit}
           />

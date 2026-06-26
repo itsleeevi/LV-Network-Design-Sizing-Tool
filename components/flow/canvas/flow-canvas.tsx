@@ -23,12 +23,15 @@ import { FeNode } from "../nodes/fe-node"; // legacy graphs
 import { WireEdge } from "../edges/wire-edge";
 import { NodeInternalsSync } from "./node-internals-sync";
 import { ToolbarPanel } from "./toolbar-panel";
+import { MenuPanel } from "./menu-panel";
+import { WelcomeScreen } from "./welcome-screen";
 import { PropertySidebar } from "../sidebar/property-sidebar";
 import { cn } from "@/lib/utils";
 
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 import { useFlowStore } from "@/store/flow-store";
+import { useSettingsStore } from "@/store/settings-store";
 
 const nodeTypes = {
   cabinet: CabinetNode,
@@ -60,6 +63,20 @@ export function FlowCanvas() {
 
   const isMoveMode = canvasMode === "move";
   const isWireMode = canvasMode === "wire";
+
+  const language = useSettingsStore((s) => s.language);
+
+  // Load any persisted project + settings from localStorage after mount
+  // (skipHydration is set in both stores to avoid SSR hydration mismatches).
+  useEffect(() => {
+    void useFlowStore.persist.rehydrate();
+    void useSettingsStore.persist.rehydrate();
+  }, []);
+
+  // Keep the document language in sync with the selected UI language.
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const onNodesChange = useCallback(
     (changes: Parameters<typeof applyNodeChanges>[0]) => {
@@ -132,9 +149,13 @@ export function FlowCanvas() {
           panOnDrag
           fitView
         >
-          <Panel position="top-left" className="!m-3">
+          <Panel position="top-left" className="m-3!">
             <ToolbarPanel />
           </Panel>
+          <Panel position="top-right" className="m-3!">
+            <MenuPanel />
+          </Panel>
+          <WelcomeScreen />
           <NodeInternalsSync />
           <Background />
           <Controls />

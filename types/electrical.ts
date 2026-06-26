@@ -2,13 +2,18 @@
 export type Device = {
   type: string; // e.g. "AID-4", "VJT-Q", "AID-F", "AID-P"
   current: number; // Amperes
+  /** Optional chainage / position marker, e.g. "41+940" (shown as "(41+940 kmsz.)") */
+  kmMarker?: string;
 };
 
 /** Cabinet (ESZ - Elosztó Szekrény) node data */
 export type CabinetNodeData = {
   label: string;
+  /** Chainage / position marker, e.g. "41+947" (shown as "M1 41+947 kmsz.") */
   kmMarker: string;
   side: "bal" | "jobb" | "";
+  /** Designation tag, e.g. "-ESZ3-7". When empty, auto-derived as "-" + label. */
+  tag?: string;
   /** List of devices in this cabinet with their currents */
   devices: Device[];
   // Calculated values (filled by engine)
@@ -77,6 +82,8 @@ export type CableEdgeData = {
   voltageDropV?: number;
   /** Voltage drop [%] */
   voltageDropPercent?: number;
+  /** Short-circuit current at the cable's end [A] = 230 / impedance (Excel "Iz") */
+  shortCircuitCurrent?: number;
 };
 
 /** Standard cable cross-sections (mm²) */

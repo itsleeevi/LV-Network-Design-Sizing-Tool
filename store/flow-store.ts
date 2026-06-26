@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { Node, Edge, Connection } from "@xyflow/react";
 import {
   CabinetNodeData,
@@ -76,14 +77,33 @@ type FlowStore = {
   deleteEdge: (edgeId: string) => void;
   runCalculations: () => void;
   autoLayout: () => void;
+
+  /** Replace the whole diagram (used when opening a project file). */
+  loadProject: (project: { nodes: Node[]; edges: Edge[] }) => void;
+  /** Reset to a fresh, empty diagram. */
+  newProject: () => void;
+
+  /** True once the persisted state has been read from localStorage. */
+  hasHydrated: boolean;
+  setHasHydrated: (value: boolean) => void;
+
+  /** Whether the start screen has been dismissed this session (not persisted). */
+  welcomeDismissed: boolean;
+  setWelcomeDismissed: (value: boolean) => void;
 };
 
-export const useFlowStore = create<FlowStore>((set, get) => ({
+export const PROJECT_STORAGE_KEY = "wire-app-project";
+
+export const useFlowStore = create<FlowStore>()(
+  persist(
+    (set, get) => ({
   nodes: initialNodes(),
   edges: initialEdges(),
   canvasMode: "move",
   selectedNodeId: null,
   selectedEdgeId: null,
+  hasHydrated: false,
+  welcomeDismissed: false,
 
   setCanvasMode: (mode) => set({ canvasMode: mode }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
@@ -100,8 +120,8 @@ export const useFlowStore = create<FlowStore>((set, get) => ({
       id: crypto.randomUUID(),
       type: "cabinet",
       position: {
-        x: 80 + cabinetCount * 140,
-        y: 320,
+        x: 80 + cabinetCount * 240,
+        y: 368,
       },
       data: { ...DEFAULT_CABINET_DATA },
     };
@@ -208,4 +228,43 @@ export const useFlowStore = create<FlowStore>((set, get) => ({
     );
     set({ nodes, edges });
   },
-}));
+
+  loadProject: (project) =>
+    set({
+      nodes: project.nodes,
+      edges: project.edges,
+      selectedNodeId: null,
+      selectedEdgeId: null,
+    }),
+
+  newProject: () =>
+    set({
+      nodes: initialNodes(),
+      edges: initialEdges(),
+      canvasMode: "move",
+      selectedNodeId: null,
+      selectedEdgeId: null,
+    }),
+
+  setHasHydrated: (value) => set({ hasHydrated: value }),
+
+  setWelcomeDismissed: (value) => set({ welcomeDismissed: value }),
+    }),
+    {
+      name: PROJECT_STORAGE_KEY,
+      storage: createJSONStorage(() => localStorage),
+      // Only persist the diagram itself, not transient UI/selection state.
+      partialize: (state) => ({
+        nodes: state.nodes,
+        edges: state.edges,
+        canvasMode: state.canvasMode,
+      }),
+      // Read from localStorage manually after mount to avoid SSR hydration
+      // mismatches; see useProjectHydration.
+      skipHydration: true,
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
+    },
+  ),
+);

@@ -4,6 +4,7 @@ import { Handle, Position, NodeProps } from "@xyflow/react";
 import type { FmNodeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { getConnectedSides } from "@/lib/cabinet-label-placement";
+import { useT, useSideLabel, useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
@@ -12,6 +13,9 @@ const BOX_H = 22;
 
 /** FM (Főmérő - Main Meter) node */
 export function FmNode({ id, data, selected }: NodeProps) {
+  const t = useT();
+  const sideLabel = useSideLabel();
+  const elementName = useElementName();
   const d = data as FmNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
   const edges = useFlowStore((s) => s.edges);
@@ -42,7 +46,7 @@ export function FmNode({ id, data, selected }: NodeProps) {
     >
       {/* Label above */}
       <div className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap text-center text-xs font-medium leading-none text-red-600">
-        {d.label}
+        {elementName(d.label, "fm")}
       </div>
 
       {/* FM symbol: box with "M" */}
@@ -51,8 +55,8 @@ export function FmNode({ id, data, selected }: NodeProps) {
       {/* Multi-line info below */}
       {(d.kmMarker || d.side || d.description) && (
         <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap text-center text-[10px] leading-tight text-red-600">
-          {d.kmMarker && <div>M1 {d.kmMarker} kmér.</div>}
-          {d.side && <div>{d.side} oldal</div>}
+          {d.kmMarker && <div>M1 {d.kmMarker} {t("unit.kmer")}</div>}
+          {d.side && <div>{sideLabel(d.side)} {t("unit.side")}</div>}
           {d.description && <div>{d.description}</div>}
         </div>
       )}

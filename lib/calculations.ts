@@ -174,9 +174,7 @@ export function runCalculations(
     totalCurrents.set(nodeId, total);
   }
 
-  const cumulativeImpedance = new Map<string, number>();
   const cumulativeVoltageDrop = new Map<string, number>();
-  cumulativeImpedance.set(sourceNode.id, 0);
   cumulativeVoltageDrop.set(sourceNode.id, 0);
 
   const edgeDataMap = new Map<string, Partial<CableEdgeData>>();
@@ -206,6 +204,8 @@ export function runCalculations(
     const voltageDropV = calculateVoltageDropV(length, crossSection, current);
     const voltageDropPercent = calculateVoltageDropPercent(voltageDropV, systemVoltage);
     const requiredCrossSection = calculateMinCrossSection(length, current, allowedDropV);
+    // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
+    const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
 
     edgeDataMap.set(edgeId, {
       current,
@@ -213,11 +213,10 @@ export function runCalculations(
       impedance: loopImpedance,
       voltageDropV,
       voltageDropPercent,
+      shortCircuitCurrent,
     });
 
-    const parentImpedance = cumulativeImpedance.get(parentId) || 0;
     const parentVoltageDrop = cumulativeVoltageDrop.get(parentId) || 0;
-    cumulativeImpedance.set(nodeId, parentImpedance + loopImpedance);
     cumulativeVoltageDrop.set(nodeId, parentVoltageDrop + voltageDropPercent);
   }
 
@@ -239,8 +238,12 @@ export function runCalculations(
     const data = node.data as CabinetNodeData;
     const ownCurrent = sumDeviceCurrents(data.devices || []);
     const totalCurrent = totalCurrents.get(node.id) || 0;
-    const loopImpedance = cumulativeImpedance.get(node.id) || 0;
-    const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
+    // Per Excel: a cabinet's loop impedance / Iz come from the cable feeding it
+    // (the cable's own segment), not the accumulated path back to the source.
+    const feedingEdgeId = edgeToChild.get(node.id);
+    const feedingEdge = feedingEdgeId ? edgeDataMap.get(feedingEdgeId) : undefined;
+    const loopImpedance = feedingEdge?.impedance ?? 0;
+    const shortCircuitCurrent = feedingEdge?.shortCircuitCurrent ?? 0;
     const voltageDrop = cumulativeVoltageDrop.get(node.id) || 0;
 
     return {

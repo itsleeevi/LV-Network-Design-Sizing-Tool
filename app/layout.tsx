@@ -13,13 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Wire App — Electrical Schematic Editor",
+  title: "LV Network Design & Sizing Tool",
   description:
-    "A visual, browser-based editor for designing low-voltage electrical distribution networks. Build schematics with drag-and-drop nodes, connect them with cables, and run calculations automatically.",
+    "Browser-based tool for low-voltage (0.4 kV) distribution network design and sizing. Lay out the cable network as a schematic and get cable sizing, voltage drop, loop impedance, and short-circuit calculations automatically.",
   openGraph: {
-    title: "Wire App — Electrical Schematic Editor",
+    title: "LV Network Design & Sizing Tool",
     description:
-      "Design low-voltage electrical schematics in your browser. Drag-and-drop nodes, wire connections, auto-layout, and built-in calculations.",
+      "Design and size low-voltage (0.4 kV) cable distribution networks in your browser, with schematic layout, auto-layout, and built-in electrical calculations.",
     type: "website",
   },
 };

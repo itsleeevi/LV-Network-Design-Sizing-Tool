@@ -1,0 +1,192 @@
+{
+  "app": "wire-app",
+  "version": 1,
+  "savedAt": "2026-06-26T20:00:00.000Z",
+  "language": "hu",
+  "nodes": [
+    {
+      "id": "asz-root",
+      "type": "asz",
+      "position": { "x": 400, "y": 40 },
+      "data": { "title": "ÁSZ", "shortCircuitPower": 500, "voltage": 400, "allowedVoltageDrop": 4 }
+    },
+    {
+      "id": "fe-1",
+      "type": "fe",
+      "position": { "x": 400, "y": 180 },
+      "data": { "label": "FE1.1", "kmMarker": "", "side": "", "description": "Főelosztó" }
+    },
+    {
+      "id": "esz1-1",
+      "type": "cabinet",
+      "position": { "x": 120, "y": 320 },
+      "data": {
+        "label": "ESZ1-1",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          { "type": "PTZ-P", "current": 0.217 },
+          { "type": "AID-F", "current": 0.435 },
+          { "type": "RSU", "current": 0.217 },
+          { "type": "AID-4", "current": 0.435 },
+          { "type": "VJT-P", "current": 12.17 },
+          { "type": "VJT-O", "current": 1.5 }
+        ]
+      }
+    },
+    {
+      "id": "esz1-2",
+      "type": "cabinet",
+      "position": { "x": 120, "y": 480 },
+      "data": {
+        "label": "ESZ1-2",
+        "kmMarker": "",
+        "side": "",
+        "devices": [{ "type": "VJT-O", "current": 1.5 }]
+      }
+    },
+    {
+      "id": "esz1-3",
+      "type": "cabinet",
+      "position": { "x": 406, "y": 320 },
+      "data": {
+        "label": "ESZ1-3",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          { "type": "VJT-O", "current": 1.5 },
+          { "type": "AID-P", "current": 12.6 },
+          { "type": "VJT-O", "current": 1.52 },
+          { "type": "AID-F", "current": 0.43 },
+          { "type": "AID-4", "current": 0.43 },
+          { "type": "AID-4", "current": 0.43 }
+        ]
+      }
+    },
+    {
+      "id": "esz1-4",
+      "type": "cabinet",
+      "position": { "x": 300, "y": 480 },
+      "data": {
+        "label": "ESZ1-4",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          { "type": "VJT-O", "current": 1.5 },
+          { "type": "AID-F", "current": 0.43 },
+          { "type": "AID-4", "current": 0.43 }
+        ]
+      }
+    },
+    {
+      "id": "esz1-7",
+      "type": "cabinet",
+      "position": { "x": 520, "y": 480 },
+      "data": {
+        "label": "ESZ1-7",
+        "kmMarker": "",
+        "side": "",
+        "devices": [{ "type": "AID-4", "current": 0.43 }]
+      }
+    },
+    {
+      "id": "esz1-5",
+      "type": "cabinet",
+      "position": { "x": 700, "y": 320 },
+      "data": {
+        "label": "ESZ1-5",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          { "type": "AID-4", "current": 0.43 },
+          { "type": "AID-4", "current": 0.43 }
+        ]
+      }
+    },
+    {
+      "id": "esz1-6",
+      "type": "cabinet",
+      "position": { "x": 700, "y": 480 },
+      "data": {
+        "label": "ESZ1-6",
+        "kmMarker": "",
+        "side": "",
+        "devices": [{ "type": "AID-4", "current": 0.43 }]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "K1",
+      "source": "asz-root",
+      "target": "fe-1",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": { "length": 2, "crossSection": 50 }
+    },
+    {
+      "id": "K1-3",
+      "source": "fe-1",
+      "target": "esz1-3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": { "length": 94, "crossSection": 25 }
+    },
+    {
+      "id": "K1-4",
+      "source": "esz1-3",
+      "target": "esz1-4",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": { "length": 257.3, "crossSection": 25 }
+    },
+    {
+      "id": "K1-7",
+      "source": "esz1-3",
+      "target": "esz1-7",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": { "length": 334.9, "crossSection": 25 }
+    },
+    {
+      "id": "K1-1",
+      "source": "fe-1",
+      "target": "esz1-1",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": { "length": 276.3, "crossSection": 50 }
+    },
+    {
+      "id": "K1-2",
+      "source": "esz1-1",
+      "target": "esz1-2",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": { "length": 72.4, "crossSection": 25 }
+    },
+    {
+      "id": "K1-5",
+      "source": "fe-1",
+      "target": "esz1-5",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": { "length": 238, "crossSection": 25 }
+    },
+    {
+      "id": "K1-6",
+      "source": "esz1-5",
+      "target": "esz1-6",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": { "length": 237.4, "crossSection": 25 }
+    }
+  ]
+}

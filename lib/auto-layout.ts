@@ -83,35 +83,43 @@ export function autoLayoutSchematic(
   // For incoming edge: use sourceHandle (where the wire comes FROM on the anchor)
   // For outgoing edge: use targetHandle (where the wire goes TO on the anchor)
   const handleOnAnchor = isIncoming ? connectedEdge.sourceHandle : connectedEdge.targetHandle;
-  
+
+  // Only cabinet-to-cabinet cables are drawn double-length. Every wire that
+  // touches the ÁSZ/FM/FE trunk (incl. the feed to the first cabinet) stays
+  // single-length, matching the reference schematic.
+  const bothCabinets =
+    targetNode.type === "cabinet" && anchorNode.type === "cabinet";
+  const hSpacing = bothCabinets ? HORIZONTAL_SPACING * 2 : HORIZONTAL_SPACING;
+  const vSpacing = bothCabinets ? VERTICAL_SPACING * 2 : VERTICAL_SPACING;
+
   let newCenterX: number;
   let newCenterY: number;
 
   switch (handleOnAnchor) {
     case "right":
       // Anchor's right handle → target should be to the RIGHT of anchor
-      newCenterX = anchorCenterX + HORIZONTAL_SPACING;
+      newCenterX = anchorCenterX + hSpacing;
       newCenterY = anchorCenterY;
       break;
     case "left":
       // Anchor's left handle → target should be to the LEFT of anchor
-      newCenterX = anchorCenterX - HORIZONTAL_SPACING;
+      newCenterX = anchorCenterX - hSpacing;
       newCenterY = anchorCenterY;
       break;
     case "bottom":
       // Anchor's bottom handle → target should be BELOW anchor
       newCenterX = anchorCenterX;
-      newCenterY = anchorCenterY + VERTICAL_SPACING;
+      newCenterY = anchorCenterY + vSpacing;
       break;
     case "top":
       // Anchor's top handle → target should be ABOVE anchor
       newCenterX = anchorCenterX;
-      newCenterY = anchorCenterY - VERTICAL_SPACING;
+      newCenterY = anchorCenterY - vSpacing;
       break;
     default:
       // Default: place below
       newCenterX = anchorCenterX;
-      newCenterY = anchorCenterY + VERTICAL_SPACING;
+      newCenterY = anchorCenterY + vSpacing;
   }
 
   // Convert center position to top-left position

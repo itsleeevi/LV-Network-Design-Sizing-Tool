@@ -3,6 +3,7 @@
 import { EdgeProps, EdgeLabelRenderer } from "@xyflow/react";
 import type { CableEdgeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
+import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const STROKE_WIDTH = 1;
@@ -116,39 +117,43 @@ function getPointAtDistance(points: Point[], distance: number): { point: Point; 
 }
 
 /**
- * Generate markers along the path
+ * Generate markers along the path.
+ *
+ * The number of labels is deterministic (driven by the caller, based on the
+ * wire type) rather than derived from the pixel length, so a given kind of
+ * cable always shows the same number of labels. Labels are centred in each of
+ * `labelCount` equal sub-segments, and a cross tick is placed at every
+ * sub-segment boundary (giving `labelCount + 1` crosses).
  */
 function generatePathMarkers(
   points: Point[],
-  segmentSpacing: number = 50
+  labelCount: number
 ): { crosses: { point: Point; angle: number }[]; labels: { point: Point; angle: number }[] } {
   const totalLength = getPathLength(points);
   const crosses: { point: Point; angle: number }[] = [];
   const labels: { point: Point; angle: number }[] = [];
-  
-  if (totalLength < 30) {
+
+  if (labelCount < 1 || totalLength < 20) {
     return { crosses, labels };
   }
-  
-  const margin = 12;
-  const usableLength = totalLength - 2 * margin;
-  const numSegments = Math.max(1, Math.floor(usableLength / segmentSpacing));
-  const actualSpacing = usableLength / numSegments;
-  
-  for (let i = 0; i <= numSegments; i++) {
-    const crossDist = margin + i * actualSpacing;
-    if (crossDist > margin && crossDist < totalLength - margin) {
-      crosses.push(getPointAtDistance(points, crossDist));
-    }
-    
-    if (i < numSegments) {
-      const labelDist = margin + (i + 0.5) * actualSpacing;
-      if (labelDist > margin * 2 && labelDist < totalLength - margin * 2) {
-        labels.push(getPointAtDistance(points, labelDist));
-      }
+
+  // Lay out crosses and labels as a single evenly-spaced sequence so every
+  // gap is identical: cabinet -+- ÜH-E -+- ÜH-E -+- cabinet.
+  // Elements: (labelCount + 1) crosses + labelCount labels, alternating,
+  // starting and ending with a cross. With N+1 gaps either side, all gaps are
+  // equal at totalLength / (numElements + 1).
+  const numElements = 2 * labelCount + 1;
+  const step = totalLength / (numElements + 1);
+
+  for (let k = 1; k <= numElements; k++) {
+    const marker = getPointAtDistance(points, k * step);
+    if (k % 2 === 1) {
+      crosses.push(marker); // odd positions → cross ticks
+    } else {
+      labels.push(marker); // even positions → cable-type labels
     }
   }
-  
+
   return { crosses, labels };
 }
 
@@ -162,11 +167,13 @@ export function WireEdge({
   targetX,
   targetY,
   source,
+  target,
   sourceHandleId,
   targetHandleId,
   data,
   selected,
 }: EdgeProps) {
+  const t = useT();
   const cableData = data as CableEdgeData | undefined;
   const selectedEdgeId = useFlowStore((s) => s.selectedEdgeId);
   const setSelectedEdgeId = useFlowStore((s) => s.setSelectedEdgeId);
@@ -178,9 +185,18 @@ export function WireEdge({
   
   // Determine cable style based on source node type
   const sourceNode = nodes.find(n => n.id === source);
+  const targetNode = nodes.find(n => n.id === target);
   const isFromAsz = sourceNode?.type === "asz";
   const cableStyle: CableStyle = isFromAsz ? "0.4kV" : "ÜH-E";
-  
+  // Localized marking shown on the drawing (logic above stays keyed on cableStyle).
+  const cableLabel = cableStyle === "0.4kV" ? t("cable.kv04") : t("cable.uhe");
+
+  // Deterministic label count: cabinet-to-cabinet cables are double-length and
+  // always show 2 labels; every other (trunk / first-feed) cable shows 1.
+  const isCabinetToCabinet =
+    sourceNode?.type === "cabinet" && targetNode?.type === "cabinet";
+  const labelCount = isCabinetToCabinet ? 2 : 1;
+
   // Calculate orthogonal path
   const pathPoints = getOrthogonalPath(
     sourceX, sourceY,
@@ -191,7 +207,7 @@ export function WireEdge({
   const pathD = pointsToPath(pathPoints);
   
   // Generate markers along the path
-  const { crosses, labels } = generatePathMarkers(pathPoints);
+  const { crosses, labels } = generatePathMarkers(pathPoints, labelCount);
   
   // Cross size
   const crossSize = cableStyle === "0.4kV" ? 4 : 5;
@@ -257,19 +273,25 @@ export function WireEdge({
         );
       })}
       
-      {/* Cable type labels */}
+      {/* Cable type labels — rotated to run along the cable, all same direction */}
       {labels.map((label, i) => {
-        let textAngleDeg = label.angle * (180 / Math.PI);
-        if (textAngleDeg > 90 || textAngleDeg < -90) {
-          textAngleDeg += 180;
-        }
+        // Routing is always orthogonal, so a label sits on either a vertical
+        // or a horizontal segment. Force a single orientation per case so every
+        // label reads the same way regardless of which direction the cable was
+        // drawn: vertical -> +90° (top-to-bottom), horizontal -> 0°.
+        const absAngleDeg = Math.abs(label.angle * (180 / Math.PI));
+        const isVertical = absAngleDeg > 45 && absAngleDeg < 135;
+        const textAngleDeg = isVertical ? 90 : 0;
+        // Size the white mask to the full text so the wire line never shows
+        // through the letters (keeps the whole label readable, no breaks).
+        const labelWidth = cableLabel.length * 6.5 + 8;
         return (
           <g key={`label-${i}`} transform={`translate(${label.point.x}, ${label.point.y})`}>
             <rect
-              x={-18}
-              y={-6}
-              width={36}
-              height={12}
+              x={-labelWidth / 2}
+              y={-7}
+              width={labelWidth}
+              height={14}
               fill="white"
               transform={`rotate(${textAngleDeg})`}
             />
@@ -282,9 +304,9 @@ export function WireEdge({
               fontFamily="Arial, sans-serif"
               fill={strokeColor}
               transform={`rotate(${textAngleDeg})`}
-              style={{ pointerEvents: "none" }}
+              style={{ pointerEvents: "none", whiteSpace: "nowrap" }}
             >
-              {cableStyle}
+              {cableLabel}
             </text>
           </g>
         );
@@ -295,7 +317,7 @@ export function WireEdge({
         <EdgeLabelRenderer>
           <div
             className={cn(
-              "nodrag nopan pointer-events-none absolute rounded bg-white px-1.5 py-1 text-[9px] leading-tight shadow-sm border border-gray-200",
+              "nodrag nopan pointer-events-none absolute whitespace-nowrap rounded bg-white px-1.5 py-1 text-[9px] leading-tight shadow-sm border border-gray-200",
               isSelected && "ring-1 ring-blue-500",
             )}
             style={{
@@ -304,15 +326,18 @@ export function WireEdge({
           >
             <div className="font-medium">{cableData.length} m • {cableData.crossSection} mm²</div>
             {cableData.current !== undefined && cableData.current > 0 && (
-              <div className="font-medium text-blue-600">Áram: {cableData.current.toFixed(2)} A</div>
+              <div className="font-medium text-blue-600">{t("canvas.current")}: {cableData.current.toFixed(2)} A</div>
             )}
             {cableData.voltageDropV !== undefined && cableData.voltageDropV > 0 && (
               <div className="font-medium text-blue-600">
-                Fesz esés: {cableData.voltageDropV.toFixed(2)} V ({cableData.voltageDropPercent?.toFixed(2)}%)
+                {t("calc.voltageDrop")}: {cableData.voltageDropV.toFixed(2)} V ({cableData.voltageDropPercent?.toFixed(2)}%)
               </div>
             )}
             {cableData.impedance !== undefined && cableData.impedance > 0 && (
-              <div className="font-medium text-blue-600">Hurok IMP: {cableData.impedance.toFixed(3)} Ω</div>
+              <div className="font-medium text-blue-600">{t("calc.loopImpedance")}: {cableData.impedance.toFixed(3)} Ω</div>
+            )}
+            {cableData.shortCircuitCurrent !== undefined && cableData.shortCircuitCurrent > 0 && (
+              <div className="font-medium text-blue-600">{t("canvas.iz")}: {cableData.shortCircuitCurrent.toFixed(1)} A</div>
             )}
           </div>
         </EdgeLabelRenderer>

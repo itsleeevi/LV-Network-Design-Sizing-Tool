@@ -4,6 +4,8 @@ import { Handle, Position, NodeProps } from "@xyflow/react";
 import type { FeNodeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { getConnectedSides } from "@/lib/cabinet-label-placement";
+import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
+import { useT, useSideLabel } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
@@ -12,6 +14,8 @@ const BOX_H = 22;
 
 /** FE (Főelosztó - Main Distribution) node */
 export function FeNode({ id, data, selected }: NodeProps) {
+  const t = useT();
+  const sideLabel = useSideLabel();
   const d = data as FeNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
   const edges = useFlowStore((s) => s.edges);
@@ -22,6 +26,11 @@ export function FeNode({ id, data, selected }: NodeProps) {
   const connectedSides = useMemo(
     () => getConnectedSides(id, edges, nodes),
     [id, edges, nodes],
+  );
+
+  const tag = useMemo(
+    () => resolveDesignationTag(undefined, getDownstreamChildLabels(id, nodes, edges)),
+    [id, nodes, edges],
   );
 
   const handleClick = (e: React.MouseEvent) => {
@@ -49,11 +58,12 @@ export function FeNode({ id, data, selected }: NodeProps) {
       <span className="text-xs font-bold">E</span>
 
       {/* Multi-line info below */}
-      {(d.kmMarker || d.side || d.description) && (
+      {(d.kmMarker || d.side || d.description || tag) && (
         <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap text-center text-[10px] leading-tight text-red-600">
-          {d.kmMarker && <div>M1 {d.kmMarker} kmér.</div>}
-          {d.side && <div>{d.side} oldal</div>}
+          {d.kmMarker && <div>M1 {d.kmMarker} {t("unit.kmer")}</div>}
+          {d.side && <div>{sideLabel(d.side)} {t("unit.side")}</div>}
           {d.description && <div>{d.description}</div>}
+          {tag && <div>{tag}</div>}
         </div>
       )}
 

@@ -10,6 +10,7 @@ import {
   labelOffsetClass,
 } from "@/lib/cabinet-label-placement";
 import { SchematicBoxPorts } from "./schematic-box-ports";
+import { useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
@@ -18,6 +19,7 @@ const BOX_H = 22;
 
 /** FM feed point below ÁSZ — label avoids sides with wires. */
 export function FeedNode({ id, data, selected }: NodeProps) {
+  const elementName = useElementName();
   const d = data as FeedNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
   const edges = useFlowStore((s) => s.edges);
@@ -35,7 +37,7 @@ export function FeedNode({ id, data, selected }: NodeProps) {
     [connectedSides],
   );
 
-  const label = d.label || "FM";
+  const label = elementName(d.label || "FM", "fm");
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

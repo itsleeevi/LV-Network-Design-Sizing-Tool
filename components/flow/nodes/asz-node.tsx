@@ -10,6 +10,7 @@ import {
   labelOffsetClass,
 } from "@/lib/cabinet-label-placement";
 import { SchematicBoxPorts } from "./schematic-box-ports";
+import { useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
@@ -18,6 +19,7 @@ const BOX_H = 22;
 
 /** ÁSZ: horizontal box with two overlapping circles (transformer symbol). */
 export function AszNode({ id, data, selected }: NodeProps) {
+  const elementName = useElementName();
   const d = data as AszNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
   const edges = useFlowStore((s) => s.edges);
@@ -57,7 +59,7 @@ export function AszNode({ id, data, selected }: NodeProps) {
           labelOffsetClass[labelPlacement],
         )}
       >
-        {d.title}
+        {elementName(d.title, "asz")}
       </div>
 
       <svg

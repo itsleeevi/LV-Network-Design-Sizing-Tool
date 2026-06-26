@@ -4,8 +4,10 @@ import { useReactFlow } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
 import { Move, Cable, Plus, Calculator, AlignHorizontalDistributeCenter } from "lucide-react";
 import { useFlowStore } from "@/store/flow-store";
+import { useT } from "@/lib/i18n";
 
 export function ToolbarPanel() {
+  const t = useT();
   const { fitView } = useReactFlow();
   const {
     canvasMode,
@@ -38,7 +40,7 @@ export function ToolbarPanel() {
           className="gap-1.5"
         >
           <Move className="h-4 w-4" />
-          Mozgatás
+          {t("toolbar.move")}
         </Button>
         <Button
           type="button"
@@ -48,29 +50,29 @@ export function ToolbarPanel() {
           className="gap-1.5"
         >
           <Cable className="h-4 w-4" />
-          Kötés
+          {t("toolbar.wire")}
         </Button>
       </div>
 
       {/* Add elements */}
       <div className="flex flex-col gap-1 rounded-lg border bg-background p-2 shadow-sm">
-        <span className="mb-1 text-xs font-medium text-muted-foreground">Elem hozzáadása</span>
+        <span className="mb-1 text-xs font-medium text-muted-foreground">{t("toolbar.addElement")}</span>
         <Button type="button" size="sm" variant="outline" onClick={addCabinet} className="justify-start gap-1.5">
           <Plus className="h-3 w-3" />
-          Szekrény (ESZ)
+          {t("toolbar.addCabinet")}
         </Button>
       </div>
 
       {/* Calculate button */}
       <Button type="button" onClick={runCalculations} className="gap-1.5">
         <Calculator className="h-4 w-4" />
-        Számítás
+        {t("toolbar.calculate")}
       </Button>
 
       {/* Auto-layout button */}
       <Button type="button" variant="outline" onClick={handleAutoLayout} className="gap-1.5">
         <AlignHorizontalDistributeCenter className="h-4 w-4" />
-        Rendezés
+        {t("toolbar.autoLayout")}
       </Button>
     </div>
   );
