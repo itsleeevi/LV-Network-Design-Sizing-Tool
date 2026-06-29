@@ -29,6 +29,13 @@ export type CabinetNodeData = {
   cumulativeVoltageDrop?: number;
 };
 
+/**
+ * Phase mode for the whole network.
+ * - "3F": three-phase (400 V, √3 factor) — the "1. körzet" / "3F" Excel sheets.
+ * - "1F": single-phase (230 V, 2-conductor factor) — the "1F" Excel sheet.
+ */
+export type PhaseMode = "1F" | "3F";
+
 /** ÁSZ (Áramszolgáltató) node data */
 export type AszNodeData = {
   title: string;
@@ -38,6 +45,8 @@ export type AszNodeData = {
   voltage: number;
   /** Allowed voltage drop [%] - typically 4% */
   allowedVoltageDrop: number;
+  /** Single-phase ("1F") vs three-phase ("3F"). Defaults to "3F". */
+  phaseMode?: PhaseMode;
 };
 
 /** FM (Főmérő - Main Meter) node data */
@@ -67,9 +76,16 @@ export type CableEdgeData = {
   length: number;
   /** Chosen cross-section [mm²] */
   crossSection: number;
+  /**
+   * Allowed voltage drop ε [%] for sizing THIS cable's minimum cross-section.
+   * When undefined, the global value from the ÁSZ node is used.
+   */
+  allowedVoltageDropPercent?: number;
   // Calculated values
   /** Total current flowing through [A] */
   current?: number;
+  /** Allowed reference voltage drop é [V] used to size the min cross-section */
+  allowedVoltageDropV?: number;
   /** Required minimum cross-section [mm²] */
   requiredCrossSection?: number;
   /** Cable resistance [Ω] */
@@ -126,6 +142,7 @@ export const DEFAULT_ASZ_DATA: AszNodeData = {
   shortCircuitPower: 500,
   voltage: 400,
   allowedVoltageDrop: 4,
+  phaseMode: "3F",
 };
 
 export const DEFAULT_FM_DATA: FmNodeData = {

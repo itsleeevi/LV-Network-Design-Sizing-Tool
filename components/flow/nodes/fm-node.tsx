@@ -45,7 +45,7 @@ export function FmNode({ id, data, selected }: NodeProps) {
       onClick={handleClick}
     >
       {/* Label above */}
-      <div className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap text-center text-xs font-medium leading-none text-red-600">
+      <div className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1 text-center text-xs font-medium leading-none text-red-600">
         {elementName(d.label, "fm")}
       </div>
 
@@ -54,7 +54,7 @@ export function FmNode({ id, data, selected }: NodeProps) {
 
       {/* Multi-line info below */}
       {(d.kmMarker || d.side || d.description) && (
-        <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap text-center text-[10px] leading-tight text-red-600">
+        <div className="pointer-events-none absolute top-full left-1/2 mt-1 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1 py-0.5 text-center text-[10px] leading-tight text-red-600">
           {d.kmMarker && <div>M1 {d.kmMarker} {t("unit.kmer")}</div>}
           {d.side && <div>{sideLabel(d.side)} {t("unit.side")}</div>}
           {d.description && <div>{d.description}</div>}

@@ -6,6 +6,7 @@ import { useFlowStore } from "@/store/flow-store";
 import {
   ASZ_LABEL_PRIORITY,
   getConnectedSides,
+  getOccupiedSides,
   getLabelPlacement,
   labelOffsetClass,
 } from "@/lib/cabinet-label-placement";
@@ -32,9 +33,14 @@ export function AszNode({ id, data, selected }: NodeProps) {
     [id, edges, nodes],
   );
 
+  const occupiedSides = useMemo(
+    () => getOccupiedSides(id, edges, nodes),
+    [id, edges, nodes],
+  );
+
   const labelPlacement = useMemo(
-    () => getLabelPlacement(connectedSides, ASZ_LABEL_PRIORITY),
-    [connectedSides],
+    () => getLabelPlacement(occupiedSides, ASZ_LABEL_PRIORITY),
+    [occupiedSides],
   );
 
   const handleClick = (e: React.MouseEvent) => {
@@ -55,7 +61,7 @@ export function AszNode({ id, data, selected }: NodeProps) {
     >
       <div
         className={cn(
-          "pointer-events-none absolute z-10 w-max whitespace-nowrap text-xs font-medium leading-none text-red-600",
+          "pointer-events-none absolute z-10 w-max whitespace-nowrap rounded bg-white px-1 text-xs font-medium leading-none text-red-600",
           labelOffsetClass[labelPlacement],
         )}
       >

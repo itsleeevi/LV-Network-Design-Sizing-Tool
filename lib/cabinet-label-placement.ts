@@ -83,6 +83,47 @@ function inferSideFromNodes(self: Node, other: Node): Position {
   return dy > 0 ? Position.Bottom : Position.Top;
 }
 
+/**
+ * Sides that visually have a wire going out of them, decided by the geometric
+ * direction toward each connected neighbour (not the stored handle, which can
+ * disagree with where the wire is actually drawn). Used for label placement so
+ * the label always lands on a side with no wire when one exists.
+ */
+export function getOccupiedSides(
+  nodeId: string,
+  edges: Edge[],
+  nodes: Node[],
+): Set<Position> {
+  const sides = new Set<Position>();
+  const self = nodes.find((n) => n.id === nodeId);
+  if (!self) return sides;
+
+  for (const edge of edges) {
+    let otherId: string | null = null;
+    let handleId: string | null = null;
+
+    if (edge.source === nodeId) {
+      otherId = edge.target;
+      handleId = edge.sourceHandle ?? null;
+    } else if (edge.target === nodeId) {
+      otherId = edge.source;
+      handleId = edge.targetHandle ?? null;
+    } else {
+      continue;
+    }
+
+    const other = otherId ? nodes.find((n) => n.id === otherId) : undefined;
+    if (other) {
+      sides.add(inferSideFromNodes(self, other));
+    } else {
+      const fromHandle = handleToPosition(handleId);
+      if (fromHandle) sides.add(fromHandle);
+    }
+  }
+
+  return sides;
+}
+
 export function getConnectedSides(
   nodeId: string,
   edges: Edge[],

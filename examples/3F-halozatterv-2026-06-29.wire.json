@@ -1,0 +1,309 @@
+{
+  "app": "wire-app",
+  "version": 1,
+  "savedAt": "2026-06-29T16:38:16.160Z",
+  "language": "hu",
+  "nodes": [
+    {
+      "id": "asz-root",
+      "type": "asz",
+      "position": {
+        "x": 400,
+        "y": 48
+      },
+      "data": {
+        "title": "ÁSZ",
+        "shortCircuitPower": 500,
+        "voltage": 400,
+        "allowedVoltageDrop": 4,
+        "phaseMode": "3F"
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "feed-root",
+      "type": "feed",
+      "position": {
+        "x": 400,
+        "y": 168
+      },
+      "data": {
+        "label": "FM"
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "4a867317-40e6-445a-b967-f3f2e2e4ad10",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 309
+      },
+      "data": {
+        "label": "FE",
+        "kmMarker": "",
+        "side": "",
+        "devices": [],
+        "ownCurrent": 0,
+        "totalCurrent": 21,
+        "loopImpedance": 0,
+        "shortCircuitCurrent": 0,
+        "cumulativeVoltageDrop": 0
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "d092bfb0-27dd-4347-8a19-d838942d2e7d",
+      "type": "cabinet",
+      "position": {
+        "x": 206,
+        "y": 309
+      },
+      "data": {
+        "label": "ESZ1",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "kamera",
+            "current": 1
+          },
+          {
+            "type": "FSZ",
+            "current": 1
+          }
+        ],
+        "ownCurrent": 2,
+        "totalCurrent": 9,
+        "loopImpedance": 0,
+        "shortCircuitCurrent": 0,
+        "cumulativeVoltageDrop": 0
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "dc314af9-dfb7-4b5f-ad45-0eb8187492f1",
+      "type": "cabinet",
+      "position": {
+        "x": 6,
+        "y": 309
+      },
+      "data": {
+        "label": "ESZ2",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "TXT",
+            "current": 6
+          },
+          {
+            "type": "kamera",
+            "current": 1
+          }
+        ],
+        "ownCurrent": 7,
+        "totalCurrent": 7,
+        "loopImpedance": 0,
+        "shortCircuitCurrent": 0,
+        "cumulativeVoltageDrop": 0
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "c66922de-bfe7-4ce8-9232-df4ce37cdcba",
+      "type": "cabinet",
+      "position": {
+        "x": 606,
+        "y": 309
+      },
+      "data": {
+        "label": "ESZ3",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "TXT",
+            "current": 6
+          }
+        ],
+        "ownCurrent": 6,
+        "totalCurrent": 12,
+        "loopImpedance": 0.4576,
+        "shortCircuitCurrent": 502.6223776223776,
+        "cumulativeVoltageDrop": 1.1888796743152772
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "3410d03c-0529-47a4-9a16-992fb0e50691",
+      "type": "cabinet",
+      "position": {
+        "x": 806,
+        "y": 309
+      },
+      "data": {
+        "label": "ESZ4",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "Véda",
+            "current": 5
+          },
+          {
+            "type": "Lidar",
+            "current": 1
+          }
+        ],
+        "ownCurrent": 6,
+        "totalCurrent": 6,
+        "loopImpedance": 0.29744,
+        "shortCircuitCurrent": 773.2651963421195,
+        "cumulativeVoltageDrop": 1.5752655684677423
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-asz-feed",
+      "source": "asz-root",
+      "target": "feed-root",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 21,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "257cde1e-acbb-4a96-80a1-3a4caffda322",
+      "source": "feed-root",
+      "target": "4a867317-40e6-445a-b967-f3f2e2e4ad10",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 21,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "f9ec78da-9908-4601-b6e1-d45e42ae6c2a",
+      "source": "d092bfb0-27dd-4347-8a19-d838942d2e7d",
+      "target": "4a867317-40e6-445a-b967-f3f2e2e4ad10",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 9,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "006415c9-0a36-4159-bd1a-744d5e1ae211",
+      "source": "dc314af9-dfb7-4b5f-ad45-0eb8187492f1",
+      "target": "d092bfb0-27dd-4347-8a19-d838942d2e7d",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 7,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "f28ab2ae-6b00-4a32-a9bd-2fbc566d403c",
+      "source": "4a867317-40e6-445a-b967-f3f2e2e4ad10",
+      "target": "c66922de-bfe7-4ce8-9232-df4ce37cdcba",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 200,
+        "crossSection": 25,
+        "allowedVoltageDropPercent": 4,
+        "current": 12,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 9.907330619293978,
+        "impedance": 0.4576,
+        "voltageDropV": 4.755518697261109,
+        "voltageDropPercent": 1.1888796743152772,
+        "shortCircuitCurrent": 502.6223776223776
+      }
+    },
+    {
+      "id": "c2707281-ca3a-4406-8b95-5f18a6543a2e",
+      "source": "c66922de-bfe7-4ce8-9232-df4ce37cdcba",
+      "target": "3410d03c-0529-47a4-9a16-992fb0e50691",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 130,
+        "crossSection": 25,
+        "allowedVoltageDropPercent": 4,
+        "current": 6,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 3.219882451270543,
+        "impedance": 0.29744,
+        "voltageDropV": 1.5455435766098606,
+        "voltageDropPercent": 0.38638589415246516,
+        "shortCircuitCurrent": 773.2651963421195
+      }
+    }
+  ]
+}

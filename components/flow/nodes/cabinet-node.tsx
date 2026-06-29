@@ -12,11 +12,15 @@ import { useFlowStore } from "@/store/flow-store";
 import { DiagonalCabinetSymbol, BOX_H, BOX_W } from "./diagonal-cabinet-symbol";
 import {
   getConnectedSides,
+  getOccupiedSides,
   getLabelPlacement,
   labelOffsetClass,
   type LabelPlacement,
 } from "@/lib/cabinet-label-placement";
-import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
+import {
+  getDownstreamChildLabels,
+  resolveDesignationTag,
+} from "@/lib/downstream";
 import { useT, useSideLabel, useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -111,7 +115,12 @@ function CabinetInfo({
   const devices = data.devices || [];
 
   return (
-    <div className={cn("whitespace-nowrap text-[10px] leading-tight text-red-600", align)}>
+    <div
+      className={cn(
+        "inline-block w-max whitespace-nowrap rounded bg-white px-1 py-0.5 text-[10px] leading-tight text-red-600",
+        align,
+      )}
+    >
       {/* Main label - clickable for rename */}
       <button
         type="button"
@@ -131,7 +140,11 @@ function CabinetInfo({
       {data.kmMarker && <div>{data.kmMarker}</div>}
 
       {/* Side */}
-      {data.side && <div>{sideLabel(data.side)} {t("unit.side")}</div>}
+      {data.side && (
+        <div>
+          {sideLabel(data.side)} {t("unit.side")}
+        </div>
+      )}
 
       {/* Designation tag — downstream out-directions, or custom override */}
       {tag && <div>{tag}</div>}
@@ -140,26 +153,32 @@ function CabinetInfo({
       {devices.map((dev, i) => (
         <div key={i}>
           {dev.type}
-          {dev.kmMarker ? ` (${dev.kmMarker} ${t("unit.kmsz")})` : dev.current ? ` ${dev.current}A` : ""}
+          {dev.kmMarker
+            ? ` (${dev.kmMarker} ${t("unit.kmsz")})`
+            : dev.current
+              ? ` ${dev.current}A`
+              : ""}
         </div>
       ))}
 
       {/* Calculated values (matches Excel summary table T-AD rows 4-6) */}
-      {data.cumulativeVoltageDrop !== undefined && data.cumulativeVoltageDrop > 0 && (
-        <div className="font-medium text-blue-600">
-          {t("calc.voltageDrop")}: {data.cumulativeVoltageDrop.toFixed(1)}
-        </div>
-      )}
+      {data.cumulativeVoltageDrop !== undefined &&
+        data.cumulativeVoltageDrop > 0 && (
+          <div className="font-medium text-blue-600">
+            {t("calc.voltageDrop")}: {data.cumulativeVoltageDrop.toFixed(1)}
+          </div>
+        )}
       {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
         <div className="font-medium text-blue-600">
           {t("calc.loopImpedance")}: {data.loopImpedance.toFixed(3)}
         </div>
       )}
-      {data.shortCircuitCurrent !== undefined && data.shortCircuitCurrent > 0 && (
-        <div className="font-medium text-blue-600">
-          {t("calc.iz")}: {data.shortCircuitCurrent.toFixed(1)}
-        </div>
-      )}
+      {data.shortCircuitCurrent !== undefined &&
+        data.shortCircuitCurrent > 0 && (
+          <div className="font-medium text-blue-600">
+            {t("calc.iz")}: {data.shortCircuitCurrent.toFixed(1)}
+          </div>
+        )}
     </div>
   );
 }
@@ -186,13 +205,19 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
     [id, edges, nodes],
   );
 
+  const occupiedSides = useMemo(
+    () => getOccupiedSides(id, edges, nodes),
+    [id, edges, nodes],
+  );
+
   const labelPlacement = useMemo(
-    () => getLabelPlacement(connectedSides),
-    [connectedSides],
+    () => getLabelPlacement(occupiedSides),
+    [occupiedSides],
   );
 
   const tag = useMemo(
-    () => resolveDesignationTag(d.tag, getDownstreamChildLabels(id, nodes, edges)),
+    () =>
+      resolveDesignationTag(d.tag, getDownstreamChildLabels(id, nodes, edges)),
     [d.tag, id, nodes, edges],
   );
 

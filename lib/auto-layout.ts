@@ -1,7 +1,17 @@
 import type { Node, Edge } from "@xyflow/react";
 
-const HORIZONTAL_SPACING = 120;
-const VERTICAL_SPACING = 100;
+// Center-to-center gaps between a node and the one it aligns to. Sized generously
+// so the wide cable info boxes (dimensions + current + drop + loop + Iz, ≈160 px)
+// and the multi-line cabinet labels never collide with neighbouring boxes/labels,
+// including cabinets whose label is pushed above/below because several sides are wired.
+const HORIZONTAL_SPACING = 340;
+const VERTICAL_SPACING = 260;
+
+// The trunk feed and the drop to the first cabinet (ÁSZ → FM → FE → first ESZ)
+// stay compact, matching the reference schematic. The wide spacing only kicks in
+// between two cabinets, where the long info boxes and labels need room.
+const TRUNK_HORIZONTAL_SPACING = 150;
+const TRUNK_VERTICAL_SPACING = 90;
 
 // Node dimensions (must match the actual component sizes)
 const NODE_SIZES: Record<string, { width: number; height: number }> = {
@@ -84,13 +94,12 @@ export function autoLayoutSchematic(
   // For outgoing edge: use targetHandle (where the wire goes TO on the anchor)
   const handleOnAnchor = isIncoming ? connectedEdge.sourceHandle : connectedEdge.targetHandle;
 
-  // Only cabinet-to-cabinet cables are drawn double-length. Every wire that
-  // touches the ÁSZ/FM/FE trunk (incl. the feed to the first cabinet) stays
-  // single-length, matching the reference schematic.
+  // Only cabinet-to-cabinet hops use the wide uniform spacing. Anything touching
+  // the trunk (ÁSZ/FM/FE), including the drop to the first cabinet, stays compact.
   const bothCabinets =
     targetNode.type === "cabinet" && anchorNode.type === "cabinet";
-  const hSpacing = bothCabinets ? HORIZONTAL_SPACING * 2 : HORIZONTAL_SPACING;
-  const vSpacing = bothCabinets ? VERTICAL_SPACING * 2 : VERTICAL_SPACING;
+  const hSpacing = bothCabinets ? HORIZONTAL_SPACING : TRUNK_HORIZONTAL_SPACING;
+  const vSpacing = bothCabinets ? VERTICAL_SPACING : TRUNK_VERTICAL_SPACING;
 
   let newCenterX: number;
   let newCenterY: number;
@@ -136,55 +145,30 @@ export function autoLayoutSchematic(
     return node;
   });
 
-  // Update edge handles for proper straight connection
+  // Update edge handles for a straight connection.
+  //
+  // IMPORTANT: keep the ANCHOR's handle exactly as it was — it is what
+  // `handleOnAnchor` reads to decide the direction. Only the moved node gets the
+  // complementary handle. Previously the anchor's own handle was flipped to the
+  // complement in the outgoing-edge case, so `handleOnAnchor` alternated on every
+  // click and the node bounced left/right (or up/down) between presses.
+  const complement: Record<string, string> = {
+    right: "left",
+    left: "right",
+    top: "bottom",
+    bottom: "top",
+  };
+  const anchorHandle = handleOnAnchor ?? "bottom";
+  const movedHandle = complement[anchorHandle] ?? "top";
+
   const updatedEdges = edges.map(edge => {
-    if (edge.id === connectedEdge.id) {
-      let newSourceHandle = edge.sourceHandle;
-      let newTargetHandle = edge.targetHandle;
+    if (edge.id !== connectedEdge.id) return edge;
 
-      // Set complementary handles based on direction
-      switch (handleOnAnchor) {
-        case "right":
-          if (isIncoming) {
-            newSourceHandle = "right";
-            newTargetHandle = "left";
-          } else {
-            newSourceHandle = "right";
-            newTargetHandle = "left";
-          }
-          break;
-        case "left":
-          if (isIncoming) {
-            newSourceHandle = "left";
-            newTargetHandle = "right";
-          } else {
-            newSourceHandle = "left";
-            newTargetHandle = "right";
-          }
-          break;
-        case "bottom":
-          if (isIncoming) {
-            newSourceHandle = "bottom";
-            newTargetHandle = "top";
-          } else {
-            newSourceHandle = "bottom";
-            newTargetHandle = "top";
-          }
-          break;
-        case "top":
-          if (isIncoming) {
-            newSourceHandle = "top";
-            newTargetHandle = "bottom";
-          } else {
-            newSourceHandle = "top";
-            newTargetHandle = "bottom";
-          }
-          break;
-      }
-
-      return { ...edge, sourceHandle: newSourceHandle, targetHandle: newTargetHandle };
-    }
-    return edge;
+    // isIncoming → anchor is the edge SOURCE, moved node is the TARGET.
+    // outgoing  → anchor is the edge TARGET, moved node is the SOURCE.
+    return isIncoming
+      ? { ...edge, sourceHandle: anchorHandle, targetHandle: movedHandle }
+      : { ...edge, sourceHandle: movedHandle, targetHandle: anchorHandle };
   });
 
   return { nodes: updatedNodes, edges: updatedEdges };

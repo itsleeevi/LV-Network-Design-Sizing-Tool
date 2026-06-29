@@ -88,6 +88,9 @@ const hu = {
 
   // ÁSZ
   "asz.title": "Áramszolgáltató (ÁSZ)",
+  "asz.phaseMode": "Fázisszám",
+  "asz.phase3": "Háromfázisú (3F · 400 V)",
+  "asz.phase1": "Egyfázisú (1F · 230 V)",
   "asz.voltage": "Hálózati feszültség (V)",
   "asz.scPower": "Rövidzárlati teljesítmény (MVA)",
   "asz.allowedDrop": "Megengedett fesz esés ε [%]",
@@ -100,6 +103,9 @@ const hu = {
   // Cable
   "cable.title": "Kábel",
   "cable.length": "Kábel hossza [m]",
+  "cable.allowedDrop": "Megengedett fesz esés ε [%]",
+  "cable.allowedDropHint": "Üresen hagyva az ÁSZ globális értékét használja.",
+  "cable.allowedDropV": "Megengedett mértékadó fesz esés é [V]",
   "cable.resistivity": "AL fajlagos ellenállása Ω mm² / m",
   "cable.crossSection": "Választott kábel keresztmetszete [mm²]",
   "cable.minCrossSection": "Szükséges minimális keresztmetszet [mm²]",
@@ -210,6 +216,9 @@ const en: Record<TranslationKey, string> = {
 
   // ÁSZ
   "asz.title": "Utility Supply",
+  "asz.phaseMode": "Phase mode",
+  "asz.phase3": "Three-phase (3F · 400 V)",
+  "asz.phase1": "Single-phase (1F · 230 V)",
   "asz.voltage": "Mains voltage (V)",
   "asz.scPower": "Short-circuit power (MVA)",
   "asz.allowedDrop": "Allowed voltage drop ε [%]",
@@ -222,6 +231,9 @@ const en: Record<TranslationKey, string> = {
   // Cable
   "cable.title": "Cable",
   "cable.length": "Cable length [m]",
+  "cable.allowedDrop": "Allowed voltage drop ε [%]",
+  "cable.allowedDropHint": "Leave empty to use the global ÁSZ value.",
+  "cable.allowedDropV": "Allowed reference voltage drop é [V]",
   "cable.resistivity": "AL resistivity Ω mm² / m",
   "cable.crossSection": "Selected cable cross-section [mm²]",
   "cable.minCrossSection": "Required minimum cross-section [mm²]",

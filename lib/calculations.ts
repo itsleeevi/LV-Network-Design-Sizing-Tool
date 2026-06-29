@@ -4,16 +4,18 @@ import type {
   CableEdgeData,
   AszNodeData,
   Device,
+  PhaseMode,
 } from "@/types/electrical";
 import { CABLE_RESISTIVITY } from "@/types/electrical";
 
 const SQRT3 = Math.sqrt(3);
-const PHASE_VOLTAGE = 230; // V (phase-to-neutral)
+const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
 const RHO = CABLE_RESISTIVITY;
 
 /**
  * Calculate loop impedance [Ω]
- * Rh = 2 × ρ × L / A (go + return path)
+ * Rh = 2 × ρ × L / A (go + return path).
+ * Identical in both phase modes (Excel "1. körzet" P column).
  */
 export function calculateLoopImpedance(length: number, crossSection: number): number {
   if (crossSection <= 0 || length <= 0) return 0;
@@ -21,39 +23,51 @@ export function calculateLoopImpedance(length: number, crossSection: number): nu
 }
 
 /**
- * Calculate voltage drop [V] for a cable segment
- * ΔU = √3 × ρ × L × I / A (3-phase formula)
+ * Calculate voltage drop [V] for a single cable segment.
+ * - 3F (three-phase):  ΔU = √3 × ρ × L × I / A
+ * - 1F (single-phase): ΔU = ρ × L × I / A   (one conductor; the Excel "1F" O column)
  */
 export function calculateVoltageDropV(
   length: number,
   crossSection: number,
-  current: number
+  current: number,
+  phaseMode: PhaseMode = "3F"
 ): number {
   if (crossSection <= 0 || current <= 0 || length <= 0) return 0;
-  return (SQRT3 * RHO * length * current) / crossSection;
+  const factor = phaseMode === "3F" ? SQRT3 : 1;
+  return (factor * RHO * length * current) / crossSection;
 }
 
 /**
- * Calculate voltage drop percentage
- * ΔU% = ΔU / systemVoltage × 100
+ * Calculate voltage drop percentage.
+ * - 3F: ΔU% = ΔU / U × 100               (U = line voltage, e.g. 400 V)
+ * - 1F: ΔU% = ΔU × 2 / U × 100           (×2 for the line + neutral conductors; U = 230 V)
  */
 export function calculateVoltageDropPercent(
   voltageDropV: number,
-  systemVoltage: number
+  systemVoltage: number,
+  phaseMode: PhaseMode = "3F"
 ): number {
   if (systemVoltage <= 0) return 0;
-  return (voltageDropV / systemVoltage) * 100;
+  const conductorFactor = phaseMode === "3F" ? 1 : 2;
+  return (voltageDropV * conductorFactor * 100) / systemVoltage;
 }
 
 /**
- * Calculate allowed voltage drop per phase [V]
- * Based on Excel: 4% → 6.9V formula
+ * Calculate the allowed voltage drop [V] used for sizing the minimum cross-section.
+ * - 3F: é = 0.75 × U × ε / √3   (≡ U × ε × √3 / 4; the Excel "3F" J column, U = 400 V)
+ * - 1F: é = U × ε / 2           (the Excel "1F" K column, U = 230 V)
  */
 export function calculateAllowedVoltageDropV(
   systemVoltage: number,
-  allowedPercent: number
+  allowedPercent: number,
+  phaseMode: PhaseMode = "3F"
 ): number {
-  return (systemVoltage * (allowedPercent / 100) * SQRT3) / 4;
+  const eps = allowedPercent / 100;
+  if (phaseMode === "1F") {
+    return (systemVoltage * eps) / 2;
+  }
+  return (0.75 * systemVoltage * eps) / SQRT3;
 }
 
 /**
@@ -112,9 +126,14 @@ export function runCalculations(
   if (!sourceNode) return { nodes, edges };
 
   const sourceData = sourceNode.data as AszNodeData;
-  const systemVoltage = sourceData.voltage || 400;
+  const phaseMode: PhaseMode = sourceData.phaseMode ?? "3F";
+  const systemVoltage = sourceData.voltage || (phaseMode === "1F" ? 230 : 400);
   const allowedDropPercent = sourceData.allowedVoltageDrop || 4;
-  const allowedDropV = calculateAllowedVoltageDropV(systemVoltage, allowedDropPercent);
+  const allowedDropV = calculateAllowedVoltageDropV(
+    systemVoltage,
+    allowedDropPercent,
+    phaseMode
+  );
 
   const adj = buildAdjacencyList(edges);
 
@@ -201,14 +220,28 @@ export function runCalculations(
     const crossSection = cableData.crossSection || 25;
 
     const loopImpedance = calculateLoopImpedance(length, crossSection);
-    const voltageDropV = calculateVoltageDropV(length, crossSection, current);
-    const voltageDropPercent = calculateVoltageDropPercent(voltageDropV, systemVoltage);
-    const requiredCrossSection = calculateMinCrossSection(length, current, allowedDropV);
+    const voltageDropV = calculateVoltageDropV(length, crossSection, current, phaseMode);
+    const voltageDropPercent = calculateVoltageDropPercent(
+      voltageDropV,
+      systemVoltage,
+      phaseMode
+    );
+    // Per-cable allowed drop overrides the global ÁSZ value when set.
+    const edgeAllowedDropV =
+      cableData.allowedVoltageDropPercent != null
+        ? calculateAllowedVoltageDropV(
+            systemVoltage,
+            cableData.allowedVoltageDropPercent,
+            phaseMode
+          )
+        : allowedDropV;
+    const requiredCrossSection = calculateMinCrossSection(length, current, edgeAllowedDropV);
     // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
 
     edgeDataMap.set(edgeId, {
       current,
+      allowedVoltageDropV: edgeAllowedDropV,
       requiredCrossSection,
       impedance: loopImpedance,
       voltageDropV,

@@ -167,7 +167,6 @@ export function WireEdge({
   targetX,
   targetY,
   source,
-  target,
   sourceHandleId,
   targetHandleId,
   data,
@@ -185,17 +184,14 @@ export function WireEdge({
   
   // Determine cable style based on source node type
   const sourceNode = nodes.find(n => n.id === source);
-  const targetNode = nodes.find(n => n.id === target);
   const isFromAsz = sourceNode?.type === "asz";
   const cableStyle: CableStyle = isFromAsz ? "0.4kV" : "ÜH-E";
   // Localized marking shown on the drawing (logic above stays keyed on cableStyle).
   const cableLabel = cableStyle === "0.4kV" ? t("cable.kv04") : t("cable.uhe");
 
-  // Deterministic label count: cabinet-to-cabinet cables are double-length and
-  // always show 2 labels; every other (trunk / first-feed) cable shows 1.
-  const isCabinetToCabinet =
-    sourceNode?.type === "cabinet" && targetNode?.type === "cabinet";
-  const labelCount = isCabinetToCabinet ? 2 : 1;
+  // Uniform sizing: every wire is the same standard length, so each shows a
+  // single, evenly-centred cable-type label.
+  const labelCount = 1;
 
   // Calculate orthogonal path
   const pathPoints = getOrthogonalPath(
@@ -220,6 +216,15 @@ export function WireEdge({
   // Calculate label position (middle of path)
   const totalLength = getPathLength(pathPoints);
   const labelPos = getPointAtDistance(pathPoints, totalLength / 2);
+
+  // Cabinet/trunk text labels sit BELOW their nodes, so on a horizontal wire the
+  // info box would collide with them. Put the box above horizontal segments and
+  // beside vertical ones so the two never overlap.
+  const midAngleDeg = Math.abs(labelPos.angle * (180 / Math.PI));
+  const midIsVertical = midAngleDeg > 45 && midAngleDeg < 135;
+  const infoTransform = midIsVertical
+    ? `translate(0, -50%) translate(${labelPos.point.x + 10}px, ${labelPos.point.y}px)`
+    : `translate(-50%, -100%) translate(${labelPos.point.x}px, ${labelPos.point.y - 8}px)`;
 
   return (
     <>
@@ -321,7 +326,7 @@ export function WireEdge({
               isSelected && "ring-1 ring-blue-500",
             )}
             style={{
-              transform: `translate(-50%, 0) translate(${labelPos.point.x}px, ${labelPos.point.y + 15}px)`,
+              transform: infoTransform,
             }}
           >
             <div className="font-medium">{cableData.length} m • {cableData.crossSection} mm²</div>

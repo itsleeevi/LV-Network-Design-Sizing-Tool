@@ -264,9 +264,33 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
   const t = useT();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
+  const phaseMode = data.phaseMode ?? "3F";
+
   return (
     <div className="space-y-3">
       <h3 className="font-semibold">{t("asz.title")}</h3>
+
+      <div className="space-y-2">
+        <Label htmlFor="phaseMode">{t("asz.phaseMode")}</Label>
+        <Select
+          value={phaseMode}
+          onValueChange={(v) => {
+            const next = v as "1F" | "3F";
+            updateNodeData(nodeId, {
+              phaseMode: next,
+              voltage: next === "1F" ? 230 : 400,
+            });
+          }}
+        >
+          <SelectTrigger id="phaseMode">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="3F">{t("asz.phase3")}</SelectItem>
+            <SelectItem value="1F">{t("asz.phase1")}</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="voltage">{t("asz.voltage")}</Label>
@@ -388,6 +412,12 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
   const t = useT();
   const updateEdgeData = useFlowStore((s) => s.updateEdgeData);
   const deleteEdge = useFlowStore((s) => s.deleteEdge);
+  const nodes = useFlowStore((s) => s.nodes);
+
+  const aszData = nodes.find((n) => n.type === "asz")?.data as
+    | AszNodeData
+    | undefined;
+  const globalAllowedDrop = aszData?.allowedVoltageDrop ?? 4;
 
   return (
     <div className="space-y-3">
@@ -413,6 +443,27 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
           value={data.length}
           onChange={(e) => updateEdgeData(edgeId, { length: parseFloat(e.target.value) || 0 })}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="allowedDrop">{t("cable.allowedDrop")}</Label>
+        <Input
+          id="allowedDrop"
+          type="number"
+          min={0}
+          max={100}
+          step={0.5}
+          value={data.allowedVoltageDropPercent ?? ""}
+          placeholder={String(globalAllowedDrop)}
+          onChange={(e) => {
+            const raw = e.target.value;
+            updateEdgeData(edgeId, {
+              allowedVoltageDropPercent:
+                raw === "" ? undefined : parseFloat(raw),
+            });
+          }}
+        />
+        <p className="text-xs text-muted-foreground">{t("cable.allowedDropHint")}</p>
       </div>
 
       <div className="rounded-md border bg-muted/40 px-2.5 py-2 text-xs leading-snug text-muted-foreground">
@@ -451,6 +502,11 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
           {data.current !== undefined && data.current > 0 && (
             <div className="text-sm">
               {t("calc.totalCurrent")}: <span className="font-medium">{data.current.toFixed(2)}</span>
+            </div>
+          )}
+          {data.allowedVoltageDropV !== undefined && data.allowedVoltageDropV > 0 && (
+            <div className="text-sm">
+              {t("cable.allowedDropV")}: <span className="font-medium">{data.allowedVoltageDropV.toFixed(2)}</span>
             </div>
           )}
           {data.requiredCrossSection !== undefined && data.requiredCrossSection > 0 && (
