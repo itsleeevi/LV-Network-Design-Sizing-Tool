@@ -1,0 +1,494 @@
+{
+  "app": "wire-app",
+  "version": 1,
+  "savedAt": "2026-06-30T10:28:03.592Z",
+  "language": "hu",
+  "nodes": [
+    {
+      "id": "asz-root",
+      "type": "asz",
+      "position": {
+        "x": 400,
+        "y": 48
+      },
+      "data": {
+        "title": "ÁSZ",
+        "shortCircuitPower": 500,
+        "voltage": 400,
+        "allowedVoltageDrop": 4,
+        "phaseMode": "3F"
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "feed-root",
+      "type": "feed",
+      "position": {
+        "x": 400,
+        "y": 168
+      },
+      "data": {
+        "label": "FM"
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "707b124d-90cb-4eb9-bc7c-15d715e5ec3b",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 259
+      },
+      "data": {
+        "label": "FE",
+        "kmMarker": "",
+        "side": "",
+        "devices": [],
+        "ownCurrent": 0,
+        "totalCurrent": 37.464,
+        "loopImpedance": 0.002288,
+        "shortCircuitCurrent": 100524.47552447552,
+        "cumulativeVoltageDrop": 0.018558411716061478
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "e66903b0-8acf-4662-b62a-f27b0c1b489f",
+      "type": "cabinet",
+      "position": {
+        "x": 746,
+        "y": 259
+      },
+      "data": {
+        "label": "ESZ1-3",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "VJT-O",
+            "current": 1.5
+          },
+          {
+            "type": "AID-P",
+            "current": 12.6
+          },
+          {
+            "type": "VJT-O",
+            "current": 1.52
+          },
+          {
+            "type": "AID-F",
+            "current": 0.43
+          },
+          {
+            "type": " AID-4",
+            "current": 0.43
+          },
+          {
+            "type": "AID-4",
+            "current": 0.43
+          }
+        ],
+        "ownCurrent": 16.91,
+        "totalCurrent": 19.7,
+        "loopImpedance": 0.215072,
+        "shortCircuitCurrent": 1069.409314090165,
+        "cumulativeVoltageDrop": 0.9358781537564909
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "c74754d0-cfa6-4c0d-a20c-3d618df9817f",
+      "type": "cabinet",
+      "position": {
+        "x": 1086,
+        "y": 259
+      },
+      "data": {
+        "label": "ESZ1-4",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "VJT-O",
+            "current": 1.5
+          },
+          {
+            "type": "AID-F",
+            "current": 0.43
+          },
+          {
+            "type": "AID-4 ",
+            "current": 0.43
+          }
+        ],
+        "ownCurrent": 2.36,
+        "totalCurrent": 2.36,
+        "loopImpedance": 0.5887024000000001,
+        "shortCircuitCurrent": 390.6897610745259,
+        "cumulativeVoltageDrop": 1.236678581621123
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "dee8e614-5e92-42b2-bde8-9667e4d0e506",
+      "type": "cabinet",
+      "position": {
+        "x": 746,
+        "y": 519
+      },
+      "data": {
+        "label": "ESZ1-7",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "AID-4",
+            "current": 0.43
+          }
+        ],
+        "ownCurrent": 0.43,
+        "totalCurrent": 0.43,
+        "loopImpedance": 0.7662511999999999,
+        "shortCircuitCurrent": 300.16266206173646,
+        "cumulativeVoltageDrop": 1.0072144017811242
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      }
+    },
+    {
+      "id": "337145db-b187-4f0e-822e-9c03e77b7482",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 519
+      },
+      "data": {
+        "label": "ESZ1-5",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "AID-4",
+            "current": 0.43
+          },
+          {
+            "type": "AID-4",
+            "current": 0.43
+          }
+        ],
+        "ownCurrent": 0.86,
+        "totalCurrent": 1.29,
+        "loopImpedance": 0.544544,
+        "shortCircuitCurrent": 422.3717459011576,
+        "cumulativeVoltageDrop": 0.17064584405284336
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "9a166e46-fd5f-46e6-825f-1d610144f1c7",
+      "type": "cabinet",
+      "position": {
+        "x": 66,
+        "y": 259
+      },
+      "data": {
+        "label": "ESZ1-1",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "PTZ-P",
+            "current": 0.217
+          },
+          {
+            "type": "AID-F",
+            "current": 0.435
+          },
+          {
+            "type": "RSU",
+            "current": 0.217
+          },
+          {
+            "type": "AID-4",
+            "current": 0.435
+          },
+          {
+            "type": "VJT-P",
+            "current": 12.17
+          },
+          {
+            "type": "VJT-O",
+            "current": 1.5
+          }
+        ],
+        "ownCurrent": 14.974,
+        "totalCurrent": 16.474,
+        "loopImpedance": 0.3160872,
+        "shortCircuitCurrent": 727.6473074518677,
+        "cumulativeVoltageDrop": 1.1459547278442463
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "23a11966-bea0-4c49-8279-81efad5f25f8",
+      "type": "cabinet",
+      "position": {
+        "x": -274,
+        "y": 259
+      },
+      "data": {
+        "label": "ESZ1-2",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "VJT-O",
+            "current": 1.5
+          }
+        ],
+        "ownCurrent": 1.5,
+        "totalCurrent": 1.5,
+        "loopImpedance": 0.1656512,
+        "shortCircuitCurrent": 1388.4596066916508,
+        "cumulativeVoltageDrop": 1.1997515331070125
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "5400a572-67e3-4752-b241-ac775c217fb3",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 779
+      },
+      "data": {
+        "label": "ESZ1-6",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "AID-4",
+            "current": 0.43
+          }
+        ],
+        "ownCurrent": 0.43,
+        "totalCurrent": 0.43,
+        "loopImpedance": 0.5431712000000001,
+        "shortCircuitCurrent": 423.4392397829634,
+        "cumulativeVoltageDrop": 0.22121385026678175
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-asz-feed",
+      "source": "asz-root",
+      "target": "feed-root",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 37.464,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "8091d41a-c361-4f88-ae7e-8ffa48ab308d",
+      "source": "707b124d-90cb-4eb9-bc7c-15d715e5ec3b",
+      "target": "feed-root",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "type": "wire",
+      "data": {
+        "length": 2,
+        "crossSection": 50,
+        "allowedVoltageDropPercent": 4,
+        "current": 37.464,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.30930686193435797,
+        "impedance": 0.002288,
+        "voltageDropV": 0.07423364686424591,
+        "voltageDropPercent": 0.018558411716061478,
+        "shortCircuitCurrent": 100524.47552447552
+      }
+    },
+    {
+      "id": "a5931352-d2ba-47f8-b71e-f43760c4e178",
+      "source": "e66903b0-8acf-4662-b62a-f27b0c1b489f",
+      "target": "707b124d-90cb-4eb9-bc7c-15d715e5ec3b",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": {
+        "length": 94,
+        "crossSection": 25,
+        "allowedVoltageDropPercent": 4,
+        "current": 19.7,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 7.644331183670245,
+        "impedance": 0.215072,
+        "voltageDropV": 3.6692789681617177,
+        "voltageDropPercent": 0.9173197420404294,
+        "shortCircuitCurrent": 1069.409314090165
+      }
+    },
+    {
+      "id": "6cbba392-9d74-4da9-a6bb-6d00b76d5b7b",
+      "source": "c74754d0-cfa6-4c0d-a20c-3d618df9817f",
+      "target": "e66903b0-8acf-4662-b62a-f27b0c1b489f",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": {
+        "length": 257.3,
+        "crossSection": 25,
+        "allowedVoltageDropPercent": 4,
+        "current": 2.36,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 2.506670232205268,
+        "impedance": 0.5887024000000001,
+        "voltageDropV": 1.2032017114585285,
+        "voltageDropPercent": 0.3008004278646321,
+        "shortCircuitCurrent": 390.6897610745259
+      }
+    },
+    {
+      "id": "0049a992-0e52-414d-b90a-8210f1e70621",
+      "source": "e66903b0-8acf-4662-b62a-f27b0c1b489f",
+      "target": "dee8e614-5e92-42b2-bde8-9667e4d0e506",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 334.9,
+        "crossSection": 25,
+        "current": 0.43,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.5944687335386115,
+        "impedance": 0.7662511999999999,
+        "voltageDropV": 0.28534499209853353,
+        "voltageDropPercent": 0.07133624802463338,
+        "shortCircuitCurrent": 300.16266206173646
+      }
+    },
+    {
+      "id": "2c2a0a04-5988-4d36-bc00-37f3e00c1f75",
+      "source": "707b124d-90cb-4eb9-bc7c-15d715e5ec3b",
+      "target": "337145db-b187-4f0e-822e-9c03e77b7482",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 238,
+        "crossSection": 25,
+        "current": 1.29,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 1.2673952694731823,
+        "impedance": 0.544544,
+        "voltageDropV": 0.6083497293471275,
+        "voltageDropPercent": 0.15208743233678187,
+        "shortCircuitCurrent": 422.3717459011576
+      },
+      "selected": false
+    },
+    {
+      "id": "eb5043b3-e4cf-4fb4-8a7e-601d19fe6617",
+      "source": "9a166e46-fd5f-46e6-825f-1d610144f1c7",
+      "target": "707b124d-90cb-4eb9-bc7c-15d715e5ec3b",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 276.3,
+        "crossSection": 50,
+        "current": 16.474,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 18.789938602136417,
+        "impedance": 0.3160872,
+        "voltageDropV": 4.509585264512739,
+        "voltageDropPercent": 1.1273963161281848,
+        "shortCircuitCurrent": 727.6473074518677
+      }
+    },
+    {
+      "id": "855225c6-09a6-4928-a9bc-5a55f628ef3d",
+      "source": "23a11966-bea0-4c49-8279-81efad5f25f8",
+      "target": "9a166e46-fd5f-46e6-825f-1d610144f1c7",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 72.4,
+        "crossSection": 25,
+        "current": 1.5,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.4483067105230525,
+        "impedance": 0.1656512,
+        "voltageDropV": 0.21518722105106522,
+        "voltageDropPercent": 0.053796805262766305,
+        "shortCircuitCurrent": 1388.4596066916508
+      }
+    },
+    {
+      "id": "da0f1151-9a07-4e4d-9cf2-ea3b981e199b",
+      "source": "337145db-b187-4f0e-822e-9c03e77b7482",
+      "target": "5400a572-67e3-4752-b241-ac775c217fb3",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 237.4,
+        "crossSection": 25,
+        "current": 0.43,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.4214000517828199,
+        "impedance": 0.5431712000000001,
+        "voltageDropV": 0.20227202485575355,
+        "voltageDropPercent": 0.050568006213938387,
+        "shortCircuitCurrent": 423.4392397829634
+      }
+    }
+  ]
+}
