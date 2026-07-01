@@ -1,7 +1,8 @@
 "use client";
 
 import { EdgeProps, EdgeLabelRenderer } from "@xyflow/react";
-import type { CableEdgeData } from "@/types/electrical";
+import type { CableEdgeData, CablePdfFieldKey } from "@/types/electrical";
+import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { useT } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -179,7 +180,16 @@ export function WireEdge({
   const nodes = useFlowStore((s) => s.nodes);
   const isSelected = selected || selectedEdgeId === id;
 
-  const hasInfoLabel = cableData && cableData.length > 0;
+  // A line is shown (on the canvas and in the PDF alike) when its checkbox is
+  // ticked, falling back to the per-field default when untouched.
+  const pdfFields = cableData?.pdfFields;
+  const showField = (key: CablePdfFieldKey) =>
+    pdfFields?.[key] ?? CABLE_PDF_FIELD_DEFAULTS[key];
+
+  const hasInfoLabel =
+    cableData &&
+    cableData.length > 0 &&
+    (Object.keys(CABLE_PDF_FIELD_DEFAULTS) as CablePdfFieldKey[]).some((k) => showField(k));
   const strokeColor = isSelected ? "#2563eb" : "#000";
   
   // Determine cable style based on source node type
@@ -329,19 +339,28 @@ export function WireEdge({
               transform: infoTransform,
             }}
           >
-            <div className="font-medium">{cableData.length} m • {cableData.crossSection} mm²</div>
-            {cableData.current !== undefined && cableData.current > 0 && (
+            {showField("dimensions") && (
+              <div className="font-medium">{cableData.length} m • {cableData.crossSection} mm²</div>
+            )}
+            {showField("current") && cableData.current !== undefined && cableData.current > 0 && (
               <div className="font-medium text-blue-600">{t("canvas.current")}: {cableData.current.toFixed(2)} A</div>
             )}
-            {cableData.voltageDropV !== undefined && cableData.voltageDropV > 0 && (
-              <div className="font-medium text-blue-600">
-                {t("calc.voltageDrop")}: {cableData.voltageDropV.toFixed(2)} V ({cableData.voltageDropPercent?.toFixed(2)}%)
-              </div>
+            {showField("allowedVoltageDropV") && cableData.allowedVoltageDropV !== undefined && cableData.allowedVoltageDropV > 0 && (
+              <div className="font-medium text-blue-600">{t("canvas.allowedDropV")}: {cableData.allowedVoltageDropV.toFixed(2)} V</div>
             )}
-            {cableData.impedance !== undefined && cableData.impedance > 0 && (
+            {showField("requiredCrossSection") && cableData.requiredCrossSection !== undefined && cableData.requiredCrossSection > 0 && (
+              <div className="font-medium text-blue-600">{t("canvas.minCrossSection")}: {cableData.requiredCrossSection.toFixed(1)} mm²</div>
+            )}
+            {showField("voltageDropV") && cableData.voltageDropV !== undefined && cableData.voltageDropV > 0 && (
+              <div className="font-medium text-blue-600">{t("calc.voltageDrop")}: {cableData.voltageDropV.toFixed(2)} V</div>
+            )}
+            {showField("voltageDropPercent") && cableData.voltageDropPercent !== undefined && cableData.voltageDropPercent > 0 && (
+              <div className="font-medium text-blue-600">{t("calc.voltageDrop")}: {cableData.voltageDropPercent.toFixed(2)} %</div>
+            )}
+            {showField("impedance") && cableData.impedance !== undefined && cableData.impedance > 0 && (
               <div className="font-medium text-blue-600">{t("calc.loopImpedance")}: {cableData.impedance.toFixed(3)} Ω</div>
             )}
-            {cableData.shortCircuitCurrent !== undefined && cableData.shortCircuitCurrent > 0 && (
+            {showField("shortCircuit") && cableData.shortCircuitCurrent !== undefined && cableData.shortCircuitCurrent > 0 && (
               <div className="font-medium text-blue-600">{t("canvas.iz")}: {cableData.shortCircuitCurrent.toFixed(1)} A</div>
             )}
           </div>

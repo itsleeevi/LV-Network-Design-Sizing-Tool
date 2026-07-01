@@ -58,7 +58,9 @@ export function MenuPanel() {
 
   const handleExportPdf = async () => {
     if (isExporting) return;
-    // Drop selection so highlight colors don't end up in the export.
+    // Drop selection so highlight colors don't end up in the export. Wire
+    // labels already show exactly the checked fields, so the capture matches
+    // the canvas.
     setSelectedNodeId(null);
     setSelectedEdgeId(null);
     setIsExporting(true);

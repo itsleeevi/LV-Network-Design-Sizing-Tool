@@ -103,16 +103,21 @@ const hu = {
   // Cable
   "cable.title": "Kábel",
   "cable.length": "Kábel hossza [m]",
-  "cable.allowedDrop": "Megengedett fesz esés ε [%]",
+  "cable.allowedDrop": "Megengedett feszültségesés ε [%]",
   "cable.allowedDropHint": "Üresen hagyva az ÁSZ globális értékét használja.",
-  "cable.allowedDropV": "Megengedett mértékadó fesz esés é [V]",
+  "cable.allowedDropV": "Megengedett mértékadó feszültségesés é [V]",
   "cable.resistivity": "AL fajlagos ellenállása Ω mm² / m",
   "cable.crossSection": "Választott kábel keresztmetszete [mm²]",
   "cable.minCrossSection": "Szükséges minimális keresztmetszet [mm²]",
-  "cable.dropV": "Választott kábel Fesz esés ε [V]",
-  "cable.dropPercent": "Választott kábel Fesz esés ε [%]",
-  "cable.impedance": "Számított hurok-impedancia (Rh): [Ω]",
+  "cable.dropV": "Választott kábel feszültségesése ε [V]",
+  "cable.dropPercent": "Választott kábel feszültségesése ε [%]",
+  "cable.impedance": "Számított hurok-impedancia (Rh) [Ω]",
   "cable.iz": "Számított zárlati áram (Iz) [A]",
+
+  // PDF export field visibility
+  "pdf.fieldsTitle": "Megjelenített adatok",
+  "pdf.fieldsHint": "A bejelölt sorok a rajzon és a PDF exportban is megjelennek.",
+  "pdf.fieldDimensions": "Méret (hossz · mm²)",
 
   // Units / canvas labels
   "unit.side": "oldal",
@@ -120,6 +125,8 @@ const hu = {
   "unit.kmer": "kmér.",
   "canvas.current": "Áram",
   "canvas.iz": "Iz",
+  "canvas.allowedDropV": "Megeng. fesz.esés",
+  "canvas.minCrossSection": "Min. keresztm.",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",
@@ -242,12 +249,19 @@ const en: Record<TranslationKey, string> = {
   "cable.impedance": "Calculated loop impedance (Rh) [Ω]",
   "cable.iz": "Calculated short-circuit current (Iz) [A]",
 
+  // PDF export field visibility
+  "pdf.fieldsTitle": "Displayed values",
+  "pdf.fieldsHint": "Ticked lines appear on the diagram and in the PDF export.",
+  "pdf.fieldDimensions": "Size (length · mm²)",
+
   // Units / canvas labels
   "unit.side": "side",
   "unit.kmsz": "km",
   "unit.kmer": "km",
   "canvas.current": "Current",
   "canvas.iz": "Iz",
+  "canvas.allowedDropV": "Allowed drop",
+  "canvas.minCrossSection": "Min. cross-sec.",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",

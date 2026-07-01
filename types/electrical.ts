@@ -81,6 +81,11 @@ export type CableEdgeData = {
    * When undefined, the global value from the ÁSZ node is used.
    */
   allowedVoltageDropPercent?: number;
+  /**
+   * Which detail lines are shown for this cable, both on the canvas label and
+   * in the PDF export. A missing flag falls back to CABLE_PDF_FIELD_DEFAULTS.
+   */
+  pdfFields?: Partial<Record<CablePdfFieldKey, boolean>>;
   // Calculated values
   /** Total current flowing through [A] */
   current?: number;
@@ -100,6 +105,35 @@ export type CableEdgeData = {
   voltageDropPercent?: number;
   /** Short-circuit current at the cable's end [A] = 230 / impedance (Excel "Iz") */
   shortCircuitCurrent?: number;
+};
+
+/**
+ * Calculated cable values that can be toggled on/off. The order here is the
+ * order they appear both in the properties checkbox list and on the wire label.
+ */
+export type CablePdfFieldKey =
+  | "dimensions"
+  | "current"
+  | "allowedVoltageDropV"
+  | "requiredCrossSection"
+  | "voltageDropV"
+  | "voltageDropPercent"
+  | "impedance"
+  | "shortCircuit";
+
+/**
+ * Whether each value is shown by default (on the canvas and in the PDF). All
+ * values start hidden; enable the ones you want per cable.
+ */
+export const CABLE_PDF_FIELD_DEFAULTS: Record<CablePdfFieldKey, boolean> = {
+  dimensions: false,
+  current: false,
+  allowedVoltageDropV: false,
+  requiredCrossSection: false,
+  voltageDropV: false,
+  voltageDropPercent: false,
+  impedance: false,
+  shortCircuit: false,
 };
 
 /** Standard cable cross-sections (mm²) */
