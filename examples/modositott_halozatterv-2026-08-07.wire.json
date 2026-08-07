@@ -1,0 +1,389 @@
+{
+  "app": "wire-app",
+  "version": 1,
+  "savedAt": "2026-08-07T11:32:04.450Z",
+  "language": "hu",
+  "nodes": [
+    {
+      "id": "asz-root",
+      "type": "asz",
+      "position": {
+        "x": 400,
+        "y": 48
+      },
+      "data": {
+        "title": "ÁSZ",
+        "shortCircuitPower": 500,
+        "voltage": 400,
+        "allowedVoltageDrop": 4,
+        "phaseMode": "3F",
+        "useDesignCurrent": true
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "feed-root",
+      "type": "feed",
+      "position": {
+        "x": 400,
+        "y": 138
+      },
+      "data": {
+        "label": "FM"
+      },
+      "measured": {
+        "width": 52,
+        "height": 22
+      }
+    },
+    {
+      "id": "283e3c4e-e483-4c2b-8274-3ddc5c7e5162",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 229
+      },
+      "data": {
+        "label": "FE1.1",
+        "kmMarker": "",
+        "side": "",
+        "devices": [],
+        "ownCurrent": 0,
+        "totalCurrent": 71,
+        "loopImpedance": 0.003432,
+        "shortCircuitCurrent": 67016.31701631701,
+        "cumulativeVoltageDrop": 0.021102614219096174,
+        "cumulativeVoltageDropV": 0.0844104568763847,
+        "maxFuseRating": 8377.039627039627
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "87a261b8-ce53-4d69-a3c7-b03857bb8b8b",
+      "type": "cabinet",
+      "position": {
+        "x": 66,
+        "y": 229
+      },
+      "data": {
+        "label": "ESZ1-1",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "VJT-P",
+            "current": 33
+          }
+        ],
+        "ownCurrent": 33,
+        "totalCurrent": 33,
+        "loopImpedance": 0.314028,
+        "shortCircuitCurrent": 732.4187652056505,
+        "cumulativeVoltageDrop": 0.9087499010547401,
+        "cumulativeVoltageDropV": 3.6349996042189603,
+        "maxFuseRating": 91.55234565070631
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "7596826a-69b5-418c-ba88-980df0521b35",
+      "type": "cabinet",
+      "position": {
+        "x": 406,
+        "y": 489
+      },
+      "data": {
+        "label": "ESZ1-2",
+        "kmMarker": "",
+        "side": "",
+        "devices": [],
+        "ownCurrent": 0,
+        "totalCurrent": 38,
+        "loopImpedance": 0.10307440000000001,
+        "shortCircuitCurrent": 2231.3979028740405,
+        "cumulativeVoltageDrop": 0.34901544305648824,
+        "cumulativeVoltageDropV": 1.396061772225953,
+        "maxFuseRating": 278.92473785925506
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "52709452-e391-4815-accb-eaa7544c9c17",
+      "type": "cabinet",
+      "position": {
+        "x": 746,
+        "y": 489
+      },
+      "data": {
+        "label": "ESZ1-4",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "VJT-P",
+            "current": 32
+          }
+        ],
+        "ownCurrent": 32,
+        "totalCurrent": 33,
+        "loopImpedance": 0.1629056,
+        "shortCircuitCurrent": 1411.8606112988134,
+        "cumulativeVoltageDrop": 0.520006062214883,
+        "cumulativeVoltageDropV": 2.080024248859532,
+        "maxFuseRating": 176.48257641235168
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "e52c3ece-103e-4a39-a73d-cbad57721923",
+      "type": "cabinet",
+      "position": {
+        "x": 1086,
+        "y": 489
+      },
+      "data": {
+        "label": "ESZ1-5",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "LAD,RAD",
+            "current": 1
+          }
+        ],
+        "ownCurrent": 1,
+        "totalCurrent": 1,
+        "loopImpedance": 0.49809760000000003,
+        "shortCircuitCurrent": 461.7568926250598,
+        "cumulativeVoltageDrop": 0.5490345409294144,
+        "cumulativeVoltageDropV": 2.1961381637176576,
+        "maxFuseRating": 57.71961157813247
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    },
+    {
+      "id": "451e9adb-7d66-4c66-9882-bc42b881c730",
+      "type": "cabinet",
+      "position": {
+        "x": 66,
+        "y": 489
+      },
+      "data": {
+        "label": "ESZ1-3",
+        "kmMarker": "",
+        "side": "",
+        "devices": [
+          {
+            "type": "",
+            "current": 5
+          }
+        ],
+        "ownCurrent": 5,
+        "totalCurrent": 5,
+        "loopImpedance": 0.42202160000000005,
+        "shortCircuitCurrent": 544.995801162784,
+        "cumulativeVoltageDrop": 0.4871236318894463,
+        "cumulativeVoltageDropV": 1.9484945275577852,
+        "maxFuseRating": 68.124475145348
+      },
+      "measured": {
+        "width": 40,
+        "height": 20
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-asz-feed",
+      "source": "asz-root",
+      "target": "feed-root",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 0,
+        "crossSection": 25,
+        "current": 28.4,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0,
+        "impedance": 0,
+        "voltageDropV": 0,
+        "voltageDropPercent": 0,
+        "shortCircuitCurrent": 0
+      }
+    },
+    {
+      "id": "5c063ad3-4a60-4e6f-a296-c2a7ac75f295",
+      "source": "283e3c4e-e483-4c2b-8274-3ddc5c7e5162",
+      "target": "feed-root",
+      "sourceHandle": "top",
+      "targetHandle": "bottom",
+      "type": "wire",
+      "data": {
+        "length": 3,
+        "crossSection": 50,
+        "current": 28.4,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.35171023698493614,
+        "impedance": 0.003432,
+        "voltageDropV": 0.0844104568763847,
+        "voltageDropPercent": 0.021102614219096174,
+        "shortCircuitCurrent": 67016.31701631701,
+        "name": "K-FE-1",
+        "pdfFields": {
+          "name": true,
+          "dimensions": true
+        }
+      }
+    },
+    {
+      "id": "85e11959-0208-4961-9128-daebf6bc402a",
+      "source": "283e3c4e-e483-4c2b-8274-3ddc5c7e5162",
+      "target": "7596826a-69b5-418c-ba88-980df0521b35",
+      "sourceHandle": "bottom",
+      "targetHandle": "top",
+      "type": "wire",
+      "data": {
+        "length": 87.1,
+        "crossSection": 50,
+        "current": 15.2,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 5.4652138139565345,
+        "impedance": 0.0996424,
+        "voltageDropV": 1.3116513153495684,
+        "voltageDropPercent": 0.3279128288373921,
+        "shortCircuitCurrent": 2308.254317439162,
+        "name": "K1-2",
+        "pdfFields": {
+          "name": true,
+          "dimensions": true
+        }
+      },
+      "selected": false
+    },
+    {
+      "id": "58eb22ba-5e21-4326-a2d1-487f257c830c",
+      "source": "283e3c4e-e483-4c2b-8274-3ddc5c7e5162",
+      "target": "87a261b8-ce53-4d69-a3c7-b03857bb8b8b",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": {
+        "length": 271.5,
+        "crossSection": 50,
+        "current": 13.2,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 14.794121447260732,
+        "impedance": 0.310596,
+        "voltageDropV": 3.5505891473425755,
+        "voltageDropPercent": 0.8876472868356439,
+        "shortCircuitCurrent": 740.5117902355472,
+        "pdfFields": {
+          "dimensions": true,
+          "allowedVoltageDropV": false,
+          "requiredCrossSection": false,
+          "name": true
+        },
+        "name": "K1-1"
+      }
+    },
+    {
+      "id": "8e304968-eb16-45b3-8c32-7eeaaf5f3ac6",
+      "source": "7596826a-69b5-418c-ba88-980df0521b35",
+      "target": "451e9adb-7d66-4c66-9882-bc42b881c730",
+      "sourceHandle": "left",
+      "targetHandle": "right",
+      "type": "wire",
+      "data": {
+        "length": 278.8,
+        "crossSection": 50,
+        "current": 1.9999999999999998,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 2.3018031472159675,
+        "impedance": 0.31894720000000004,
+        "voltageDropV": 0.5524327553318321,
+        "voltageDropPercent": 0.13810818883295803,
+        "shortCircuitCurrent": 721.1224930019764,
+        "pdfFields": {
+          "dimensions": true,
+          "allowedVoltageDropV": false,
+          "requiredCrossSection": false,
+          "name": true
+        },
+        "name": "K1-3"
+      }
+    },
+    {
+      "id": "742a8586-e95b-4f6e-ba63-756208bc3e13",
+      "source": "7596826a-69b5-418c-ba88-980df0521b35",
+      "target": "52709452-e391-4815-accb-eaa7544c9c17",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 52.3,
+        "crossSection": 50,
+        "current": 13.2,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 2.8498436526399122,
+        "impedance": 0.059831199999999994,
+        "voltageDropV": 0.683962476633579,
+        "voltageDropPercent": 0.17099061915839475,
+        "shortCircuitCurrent": 3844.1482036128314,
+        "pdfFields": {
+          "dimensions": true,
+          "name": true
+        },
+        "name": "K1-4"
+      }
+    },
+    {
+      "id": "2527bf94-ed3c-47ae-8635-03d9278f1698",
+      "source": "52709452-e391-4815-accb-eaa7544c9c17",
+      "target": "e52c3ece-103e-4a39-a73d-cbad57721923",
+      "sourceHandle": "right",
+      "targetHandle": "left",
+      "type": "wire",
+      "data": {
+        "length": 293,
+        "crossSection": 50,
+        "current": 0.39999999999999997,
+        "allowedVoltageDropV": 6.92820323027551,
+        "requiredCrossSection": 0.4838079785755225,
+        "impedance": 0.335192,
+        "voltageDropV": 0.1161139148581254,
+        "voltageDropPercent": 0.02902847871453135,
+        "shortCircuitCurrent": 686.1738943650207,
+        "pdfFields": {
+          "dimensions": true,
+          "name": true
+        },
+        "name": "K1-5"
+      }
+    }
+  ]
+}

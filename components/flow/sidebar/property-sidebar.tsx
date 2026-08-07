@@ -24,8 +24,12 @@ import {
   COMMON_DEVICES,
   ALUMINIUM_CABLE,
 } from "@/types/electrical";
-import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
+import {
+  getDownstreamChildLabels,
+  resolveDesignationTag,
+} from "@/lib/downstream";
 import { useT, useElementName } from "@/lib/i18n";
+import { formatCalc } from "@/lib/utils";
 import { X, Trash2, Plus } from "lucide-react";
 
 function DeviceRow({
@@ -56,7 +60,10 @@ function DeviceRow({
           value={device.current}
           className="h-8 w-14 text-sm"
           onChange={(e) =>
-            onUpdate(index, { ...device, current: parseFloat(e.target.value) || 0 })
+            onUpdate(index, {
+              ...device,
+              current: parseFloat(e.target.value) || 0,
+            })
           }
         />
         <span className="text-xs text-muted-foreground">A</span>
@@ -73,13 +80,21 @@ function DeviceRow({
         value={device.kmMarker ?? ""}
         placeholder={t("device.km")}
         className="h-7 text-xs"
-        onChange={(e) => onUpdate(index, { ...device, kmMarker: e.target.value })}
+        onChange={(e) =>
+          onUpdate(index, { ...device, kmMarker: e.target.value })
+        }
       />
     </div>
   );
 }
 
-function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNodeData }) {
+function CabinetProperties({
+  nodeId,
+  data,
+}: {
+  nodeId: string;
+  data: CabinetNodeData;
+}) {
   const t = useT();
   const elementName = useElementName();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
@@ -88,7 +103,10 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
   const edges = useFlowStore((s) => s.edges);
 
   const devices = data.devices || [];
-  const autoTag = resolveDesignationTag(undefined, getDownstreamChildLabels(nodeId, nodes, edges));
+  const autoTag = resolveDesignationTag(
+    undefined,
+    getDownstreamChildLabels(nodeId, nodes, edges),
+  );
 
   const handleUpdateDevice = (index: number, device: Device) => {
     const newDevices = [...devices];
@@ -163,7 +181,9 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
         <Select
           value={data.side || "none"}
           onValueChange={(v) =>
-            updateNodeData(nodeId, { side: v === "none" ? "" : (v as "bal" | "jobb") })
+            updateNodeData(nodeId, {
+              side: v === "none" ? "" : (v as "bal" | "jobb"),
+            })
           }
         >
           <SelectTrigger>
@@ -204,7 +224,9 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">{t("cabinet.noDevices")}</p>
+          <p className="text-xs text-muted-foreground">
+            {t("cabinet.noDevices")}
+          </p>
         )}
 
         {/* Quick add presets */}
@@ -214,7 +236,9 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
               key={preset.type}
               variant="secondary"
               size="sm"
-              onClick={() => handleAddDevice({ type: preset.type, current: preset.current })}
+              onClick={() =>
+                handleAddDevice({ type: preset.type, current: preset.current })
+              }
               className="h-6 px-2 text-xs"
             >
               +{preset.type}
@@ -228,32 +252,65 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
         data.totalCurrent !== undefined ||
         data.loopImpedance !== undefined ||
         data.shortCircuitCurrent !== undefined ||
-        data.cumulativeVoltageDrop !== undefined) && (
+        data.cumulativeVoltageDrop !== undefined ||
+        data.cumulativeVoltageDropV !== undefined ||
+        data.maxFuseRating !== undefined) && (
         <div className="rounded-md border bg-muted/50 p-2 space-y-1">
-          <h4 className="text-xs font-medium text-muted-foreground">{t("calc.title")}</h4>
+          <h4 className="text-xs font-medium text-muted-foreground">
+            {t("calc.title")}
+          </h4>
           {data.ownCurrent !== undefined && (
             <div className="text-sm">
-              {t("calc.current")}: <span className="font-medium">{data.ownCurrent.toFixed(2)}</span>
+              {t("calc.current")}:{" "}
+              <span className="font-medium">{formatCalc(data.ownCurrent)}</span>
             </div>
           )}
           {data.totalCurrent !== undefined && (
             <div className="text-sm">
-              {t("calc.totalCurrent")}: <span className="font-medium">{data.totalCurrent.toFixed(2)}</span>
+              {t("calc.totalCurrent")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.totalCurrent)}
+              </span>
+            </div>
+          )}
+          {data.cumulativeVoltageDropV !== undefined && (
+            <div className="text-sm">
+              {t("calc.voltageDrop")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.cumulativeVoltageDropV)} V
+              </span>
             </div>
           )}
           {data.cumulativeVoltageDrop !== undefined && (
             <div className="text-sm">
-              {t("calc.voltageDrop")}: <span className="font-medium">{data.cumulativeVoltageDrop.toFixed(1)}</span>
+              {t("calc.voltageDrop")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.cumulativeVoltageDrop)} %
+              </span>
             </div>
           )}
           {data.loopImpedance !== undefined && (
             <div className="text-sm">
-              {t("calc.loopImpedance")}: <span className="font-medium">{data.loopImpedance.toFixed(1)}</span>
+              {t("calc.loopImpedance")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.loopImpedance)} Ω
+              </span>
             </div>
           )}
           {data.shortCircuitCurrent !== undefined && (
             <div className="text-sm">
-              {t("calc.iz")}: <span className="font-medium">{data.shortCircuitCurrent.toFixed(1)}</span>
+              {t("calc.iz")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.shortCircuitCurrent)}
+              </span>
+            </div>
+          )}
+          {data.maxFuseRating !== undefined && (
+            <div className="text-sm">
+              {t("calc.maxFuse")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.maxFuseRating)}
+              </span>
             </div>
           )}
         </div>
@@ -262,7 +319,13 @@ function CabinetProperties({ nodeId, data }: { nodeId: string; data: CabinetNode
   );
 }
 
-function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) {
+function AszProperties({
+  nodeId,
+  data,
+}: {
+  nodeId: string;
+  data: AszNodeData;
+}) {
   const t = useT();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
 
@@ -303,7 +366,9 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
           step={1}
           value={data.voltage || 400}
           onChange={(e) =>
-            updateNodeData(nodeId, { voltage: parseFloat(e.target.value) || 400 })
+            updateNodeData(nodeId, {
+              voltage: parseFloat(e.target.value) || 400,
+            })
           }
         />
       </div>
@@ -317,7 +382,9 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
           step={10}
           value={data.shortCircuitPower || 500}
           onChange={(e) =>
-            updateNodeData(nodeId, { shortCircuitPower: parseFloat(e.target.value) || 500 })
+            updateNodeData(nodeId, {
+              shortCircuitPower: parseFloat(e.target.value) || 500,
+            })
           }
         />
       </div>
@@ -332,9 +399,28 @@ function AszProperties({ nodeId, data }: { nodeId: string; data: AszNodeData }) 
           step={0.5}
           value={data.allowedVoltageDrop || 4}
           onChange={(e) =>
-            updateNodeData(nodeId, { allowedVoltageDrop: parseFloat(e.target.value) || 4 })
+            updateNodeData(nodeId, {
+              allowedVoltageDrop: parseFloat(e.target.value) || 4,
+            })
           }
         />
+      </div>
+
+      <div className="space-y-1">
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 cursor-pointer accent-blue-600"
+            checked={data.useDesignCurrent ?? false}
+            onChange={(e) =>
+              updateNodeData(nodeId, { useDesignCurrent: e.target.checked })
+            }
+          />
+          <span>{t("asz.useDesignCurrent")}</span>
+        </label>
+        <p className="text-xs text-muted-foreground">
+          {t("asz.useDesignCurrentHint")}
+        </p>
       </div>
     </div>
   );
@@ -385,13 +471,14 @@ function FmFeProperties({
 
       {type !== "feed" && "kmMarker" in data && (
         <>
-
           <div className="space-y-2">
             <Label htmlFor="side">{t("field.side")}</Label>
             <Select
               value={data.side || "none"}
               onValueChange={(v) =>
-                updateNodeData(nodeId, { side: v === "none" ? "" : (v as "bal" | "jobb") })
+                updateNodeData(nodeId, {
+                  side: v === "none" ? "" : (v as "bal" | "jobb"),
+                })
               }
             >
               <SelectTrigger>
@@ -410,7 +497,13 @@ function FmFeProperties({
   );
 }
 
-function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData }) {
+function CableProperties({
+  edgeId,
+  data,
+}: {
+  edgeId: string;
+  data: CableEdgeData;
+}) {
   const t = useT();
   const updateEdgeData = useFlowStore((s) => s.updateEdgeData);
   const deleteEdge = useFlowStore((s) => s.deleteEdge);
@@ -422,6 +515,7 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
   const globalAllowedDrop = aszData?.allowedVoltageDrop ?? 4;
 
   const pdfFieldOptions: { key: CablePdfFieldKey; label: string }[] = [
+    { key: "name", label: t("cable.name") },
     { key: "dimensions", label: t("pdf.fieldDimensions") },
     { key: "current", label: t("calc.totalCurrent") },
     { key: "allowedVoltageDropV", label: t("cable.allowedDropV") },
@@ -453,6 +547,19 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
       </div>
 
       <div className="space-y-2">
+        <Label htmlFor="cableName">{t("cable.name")}</Label>
+        <Input
+          id="cableName"
+          type="text"
+          placeholder={t("cable.namePlaceholder")}
+          value={data.name ?? ""}
+          onChange={(e) =>
+            updateEdgeData(edgeId, { name: e.target.value || undefined })
+          }
+        />
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="length">{t("cable.length")}</Label>
         <Input
           id="length"
@@ -460,7 +567,9 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
           min={0}
           step={1}
           value={data.length}
-          onChange={(e) => updateEdgeData(edgeId, { length: parseFloat(e.target.value) || 0 })}
+          onChange={(e) =>
+            updateEdgeData(edgeId, { length: parseFloat(e.target.value) || 0 })
+          }
         />
       </div>
 
@@ -482,21 +591,25 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
             });
           }}
         />
-        <p className="text-xs text-muted-foreground">{t("cable.allowedDropHint")}</p>
+        <p className="text-xs text-muted-foreground">
+          {t("cable.allowedDropHint")}
+        </p>
       </div>
 
       <div className="rounded-md border bg-muted/40 px-2.5 py-2 text-xs leading-snug text-muted-foreground">
-        <p className="font-medium text-foreground">
-          {t("cable.resistivity")}
+        <p className="font-medium text-foreground">{t("cable.resistivity")}</p>
+        <p className="mt-0.5 font-mono">
+          {ALUMINIUM_CABLE.resistivityOhmMm2PerM}
         </p>
-        <p className="mt-0.5 font-mono">{ALUMINIUM_CABLE.resistivityOhmMm2PerM}</p>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="crossSection">{t("cable.crossSection")}</Label>
         <Select
           value={String(data.crossSection)}
-          onValueChange={(v) => updateEdgeData(edgeId, { crossSection: parseFloat(v) })}
+          onValueChange={(v) =>
+            updateEdgeData(edgeId, { crossSection: parseFloat(v) })
+          }
         >
           <SelectTrigger>
             <SelectValue />
@@ -517,57 +630,78 @@ function CableProperties({ edgeId, data }: { edgeId: string; data: CableEdgeData
         data.voltageDropV !== undefined ||
         data.impedance !== undefined) && (
         <div className="rounded-md border bg-muted/50 p-2 space-y-1">
-          <h4 className="text-xs font-medium text-muted-foreground">{t("calc.title")}</h4>
+          <h4 className="text-xs font-medium text-muted-foreground">
+            {t("calc.title")}
+          </h4>
           {data.current !== undefined && data.current > 0 && (
             <div className="text-sm">
-              {t("calc.totalCurrent")}: <span className="font-medium">{data.current.toFixed(2)}</span>
+              {t("calc.totalCurrent")}:{" "}
+              <span className="font-medium">{formatCalc(data.current)}</span>
             </div>
           )}
-          {data.allowedVoltageDropV !== undefined && data.allowedVoltageDropV > 0 && (
-            <div className="text-sm">
-              {t("cable.allowedDropV")}: <span className="font-medium">{data.allowedVoltageDropV.toFixed(2)}</span>
-            </div>
-          )}
-          {data.requiredCrossSection !== undefined && data.requiredCrossSection > 0 && (
-            <div className="text-sm">
-              {t("cable.minCrossSection")}:{" "}
-              <span
-                className={
-                  data.requiredCrossSection > (data.crossSection || 0)
-                    ? "font-medium text-destructive"
-                    : "font-medium text-green-600"
-                }
-              >
-                {data.requiredCrossSection.toFixed(1)}
-              </span>
-            </div>
-          )}
+          {data.allowedVoltageDropV !== undefined &&
+            data.allowedVoltageDropV > 0 && (
+              <div className="text-sm">
+                {t("cable.allowedDropV")}:{" "}
+                <span className="font-medium">
+                  {formatCalc(data.allowedVoltageDropV)}
+                </span>
+              </div>
+            )}
+          {data.requiredCrossSection !== undefined &&
+            data.requiredCrossSection > 0 && (
+              <div className="text-sm">
+                {t("cable.minCrossSection")}:{" "}
+                <span
+                  className={
+                    data.requiredCrossSection > (data.crossSection || 0)
+                      ? "font-medium text-destructive"
+                      : "font-medium text-green-600"
+                  }
+                >
+                  {formatCalc(data.requiredCrossSection)}
+                </span>
+              </div>
+            )}
           {data.voltageDropV !== undefined && (
             <div className="text-sm">
-              {t("cable.dropV")}: <span className="font-medium">{data.voltageDropV.toFixed(2)}</span>
+              {t("cable.dropV")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.voltageDropV)}
+              </span>
             </div>
           )}
           {data.voltageDropPercent !== undefined && (
             <div className="text-sm">
-              {t("cable.dropPercent")}: <span className="font-medium">{data.voltageDropPercent.toFixed(2)}</span>
+              {t("cable.dropPercent")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.voltageDropPercent)}
+              </span>
             </div>
           )}
           {data.impedance !== undefined && (
             <div className="text-sm">
-              {t("cable.impedance")}: <span className="font-medium">{data.impedance.toFixed(3)}</span>
+              {t("cable.impedance")}:{" "}
+              <span className="font-medium">{formatCalc(data.impedance)}</span>
             </div>
           )}
-          {data.shortCircuitCurrent !== undefined && data.shortCircuitCurrent > 0 && (
-            <div className="text-sm">
-              {t("cable.iz")}: <span className="font-medium">{data.shortCircuitCurrent.toFixed(1)}</span>
-            </div>
-          )}
+          {data.shortCircuitCurrent !== undefined &&
+            data.shortCircuitCurrent > 0 && (
+              <div className="text-sm">
+                {t("cable.iz")}:{" "}
+                <span className="font-medium">
+                  {formatCalc(data.shortCircuitCurrent)}
+                </span>
+              </div>
+            )}
         </div>
       )}
 
       <div className="space-y-2 rounded-md border p-2">
         <div>
-          <h4 className="text-xs font-medium text-foreground">{t("pdf.fieldsTitle")}</h4>
+          <h4 className="text-xs font-medium text-foreground">
+            {t("pdf.fieldsTitle")}
+          </h4>
           <p className="text-xs text-muted-foreground">{t("pdf.fieldsHint")}</p>
         </div>
         <div className="space-y-1.5">
@@ -600,8 +734,12 @@ export function PropertySidebar() {
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
   const setSelectedEdgeId = useFlowStore((s) => s.setSelectedEdgeId);
 
-  const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
-  const selectedEdge = selectedEdgeId ? edges.find((e) => e.id === selectedEdgeId) : null;
+  const selectedNode = selectedNodeId
+    ? nodes.find((n) => n.id === selectedNodeId)
+    : null;
+  const selectedEdge = selectedEdgeId
+    ? edges.find((e) => e.id === selectedEdgeId)
+    : null;
 
   // Only mount the sidebar when something is selected; clicking empty space
   // clears the selection (see onPaneClick) which removes the panel entirely.
@@ -612,7 +750,9 @@ export function PropertySidebar() {
   return (
     <div className="w-72 border-l bg-background p-4 overflow-y-auto">
       <div className="mb-4 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{t("sidebar.properties")}</span>
+        <span className="text-xs text-muted-foreground">
+          {t("sidebar.properties")}
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -634,15 +774,26 @@ export function PropertySidebar() {
       )}
 
       {selectedNode && selectedNode.type === "asz" && (
-        <AszProperties nodeId={selectedNode.id} data={selectedNode.data as AszNodeData} />
+        <AszProperties
+          nodeId={selectedNode.id}
+          data={selectedNode.data as AszNodeData}
+        />
       )}
 
       {selectedNode && selectedNode.type === "fm" && (
-        <FmFeProperties nodeId={selectedNode.id} data={selectedNode.data as FmNodeData} type="fm" />
+        <FmFeProperties
+          nodeId={selectedNode.id}
+          data={selectedNode.data as FmNodeData}
+          type="fm"
+        />
       )}
 
       {selectedNode && selectedNode.type === "fe" && (
-        <FmFeProperties nodeId={selectedNode.id} data={selectedNode.data as FeNodeData} type="fe" />
+        <FmFeProperties
+          nodeId={selectedNode.id}
+          data={selectedNode.data as FeNodeData}
+          type="fe"
+        />
       )}
 
       {selectedNode && selectedNode.type === "feed" && (
@@ -657,7 +808,10 @@ export function PropertySidebar() {
         <CableProperties
           edgeId={selectedEdge.id}
           data={
-            (selectedEdge.data as CableEdgeData) || { length: 0, crossSection: 25 }
+            (selectedEdge.data as CableEdgeData) || {
+              length: 0,
+              crossSection: 25,
+            }
           }
         />
       )}

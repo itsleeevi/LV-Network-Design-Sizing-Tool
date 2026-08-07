@@ -22,15 +22,16 @@ There is no automated test suite yet. `pnpm verify:calc` is the closest thing to
 
 The UI, code comments, and data model use Hungarian electrical-engineering abbreviations. Know these before editing:
 
-| Term | Hungarian                | Meaning                                              |
-| ---- | ------------------------- | ----------------------------------------------------- |
-| ÁSZ  | Áramszolgáltató           | Utility supply / transformer, the root of the network |
-| FM   | Főmérő                    | Main meter                                            |
-| FE   | Főelosztó                 | Main distributor                                      |
-| ESZ  | Elosztó Szekrény          | Distribution cabinet / roadside feeder pillar         |
-| kmsz | km szelvény                | Chainage / position marker along a route              |
-| 3F   |                            | Three-phase system, 400 V line voltage                |
-| 1F   |                            | Single-phase system, 230 V                            |
+| Term | Hungarian        | Meaning                                               |
+| ---- | ---------------- | ----------------------------------------------------- |
+| ÁSZ  | Áramszolgáltató  | Utility supply / transformer, the root of the network |
+| FM   | Főmérő           | Main meter                                            |
+| FE   | Főelosztó        | Main distributor                                      |
+| ESZ  | Elosztó Szekrény | Distribution cabinet / roadside feeder pillar         |
+| kmsz | km szelvény      | Chainage / position marker along a route              |
+| 3F   |                  | Three-phase system, 400 V line voltage                |
+| 1F   |                  | Single-phase system, 230 V                            |
+| Bizt | Biztosíték       | Fuse; the suggested max. rating so it still trips reliably on a fault this far out (Iz / 8) |
 
 ## Architecture Map
 
@@ -43,7 +44,7 @@ The UI, code comments, and data model use Hungarian electrical-engineering abbre
 - `store/settings-store.ts` : UI settings (currently just language), persisted separately.
 - `lib/calculations.ts` : the calculation engine. Pure functions, no React, no DOM. This is the most safety-critical file in the repo.
 - `lib/downstream.ts` : graph helper that derives downstream child labels from the edge list, used for auto-generating cabinet designation tags.
-- `lib/auto-layout.ts` : positions one newly connected node relative to its neighbor when "Rendezés" (auto layout) is triggered.
+- `lib/auto-layout.ts` : lays out the whole network from the ÁSZ when "Rendezés" (auto layout) is triggered, so every cable is drawn at a consistent length (compact trunk hops, uniform wide cabinet-to-cabinet hops).
 - `lib/cabinet-label-placement.ts` : picks which side of a node symbol to place its label on, avoiding the side a wire is attached to.
 - `lib/pdf-export.ts` : rasterizes the live canvas and legend to PNG (`html-to-image`) and composes a print-ready PDF (`jsPDF`).
 - `lib/project-io.ts` : serializes/deserializes the `.wire.json` project file format.
@@ -54,7 +55,9 @@ The UI, code comments, and data model use Hungarian electrical-engineering abbre
 
 ## Critical Safety Rule: The Calculation Engine
 
-`lib/calculations.ts` and `lib/downstream.ts` implement formulas that were reverse-engineered from, and are verified against, `UHK szamitas pelda.xlsx` (an Excel reference calculation). The numbers must keep matching that spreadsheet.
+`lib/calculations.ts` and `lib/downstream.ts` implement formulas that were reverse-engineered from, and are verified against, existing Excel-based reference calculations: the `3F` sheet of `UHK szamitas pelda.xlsx` (a single cable chain) and the `1. körzet` sheet of `examples/UHK szamitas_Rack_v1.xlsx` (a branching network that fixes how per-cabinet loop impedance and short-circuit current accumulate along the path back to the source, and the design current factor: raw device total × 1.2 / phases, applied when the ÁSZ node's `useDesignCurrent` is on). The numbers must keep matching those spreadsheets.
+
+Not every cell in every sheet is usable as a reference. The Rack workbook's summary block reports cumulative voltage drop in percent under its `Hurok IMP` label, because an inserted column shifted the calculated columns one to the right and that row's formula was never updated to follow. `scripts/verify-calculations.ts` documents which cells this affects and how the expected cumulative values are derived instead. Before treating a disagreement between the app and a spreadsheet as an engine bug, check whether the spreadsheet agrees with itself.
 
 If you touch `runCalculations`, any function in `lib/calculations.ts`, or the graph traversal in `lib/downstream.ts`:
 

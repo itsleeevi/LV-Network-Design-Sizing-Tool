@@ -27,7 +27,21 @@ export type CabinetNodeData = {
   shortCircuitCurrent?: number;
   /** Cumulative voltage drop to this point [%] */
   cumulativeVoltageDrop?: number;
+  /** Cumulative voltage drop to this point [V] */
+  cumulativeVoltageDropV?: number;
+  /**
+   * Suggested maximum fuse rating at this point [A] (Excel summary block
+   * "Bizt" row: shortCircuitCurrent / FUSE_CURRENT_DIVISOR). A larger fuse
+   * than this may not trip reliably on a fault this far from the source.
+   */
+  maxFuseRating?: number;
 };
+
+/**
+ * Divisor applied to the short-circuit current to get a rule-of-thumb
+ * maximum fuse rating (Excel "Bizt" row, e.g. `+U6/8`).
+ */
+export const FUSE_CURRENT_DIVISOR = 8;
 
 /**
  * Phase mode for the whole network.
@@ -47,7 +61,17 @@ export type AszNodeData = {
   allowedVoltageDrop: number;
   /** Single-phase ("1F") vs three-phase ("3F"). Defaults to "3F". */
   phaseMode?: PhaseMode;
+  /**
+   * When true, cable currents are design currents ("mértékadó áram"): the
+   * downstream raw device total × DESIGN_CURRENT_SAFETY_FACTOR / number of
+   * phases (the Rack workbook's G column, e.g. `+G24*(1.2)/3`). Off by
+   * default so projects with pre-derived currents keep their numbers.
+   */
+  useDesignCurrent?: boolean;
 };
+
+/** Safety factor applied to raw device totals in design-current mode. */
+export const DESIGN_CURRENT_SAFETY_FACTOR = 1.2;
 
 /** FM (Főmérő - Main Meter) node data */
 export type FmNodeData = {
@@ -72,6 +96,8 @@ export type FeedNodeData = {
 
 /** Cable properties for edges (aluminium only, per UHK Excel) */
 export type CableEdgeData = {
+  /** Cable identifier/name, e.g. "K1-1" (the Excel "Megnevezés" / D column) */
+  name?: string;
   /** Cable length [m] */
   length: number;
   /** Chosen cross-section [mm²] */
@@ -112,6 +138,7 @@ export type CableEdgeData = {
  * order they appear both in the properties checkbox list and on the wire label.
  */
 export type CablePdfFieldKey =
+  | "name"
   | "dimensions"
   | "current"
   | "allowedVoltageDropV"
@@ -126,6 +153,7 @@ export type CablePdfFieldKey =
  * values start hidden; enable the ones you want per cable.
  */
 export const CABLE_PDF_FIELD_DEFAULTS: Record<CablePdfFieldKey, boolean> = {
+  name: false,
   dimensions: false,
   current: false,
   allowedVoltageDropV: false,
@@ -177,6 +205,7 @@ export const DEFAULT_ASZ_DATA: AszNodeData = {
   voltage: 400,
   allowedVoltageDrop: 4,
   phaseMode: "3F",
+  useDesignCurrent: false,
 };
 
 export const DEFAULT_FM_DATA: FmNodeData = {

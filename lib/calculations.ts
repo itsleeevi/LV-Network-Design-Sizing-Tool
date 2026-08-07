@@ -6,7 +6,11 @@ import type {
   Device,
   PhaseMode,
 } from "@/types/electrical";
-import { CABLE_RESISTIVITY } from "@/types/electrical";
+import {
+  CABLE_RESISTIVITY,
+  DESIGN_CURRENT_SAFETY_FACTOR,
+  FUSE_CURRENT_DIVISOR,
+} from "@/types/electrical";
 
 const SQRT3 = Math.sqrt(3);
 const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
@@ -17,7 +21,10 @@ const RHO = CABLE_RESISTIVITY;
  * Rh = 2 × ρ × L / A (go + return path).
  * Identical in both phase modes (Excel "1. körzet" P column).
  */
-export function calculateLoopImpedance(length: number, crossSection: number): number {
+export function calculateLoopImpedance(
+  length: number,
+  crossSection: number,
+): number {
   if (crossSection <= 0 || length <= 0) return 0;
   return (2 * RHO * length) / crossSection;
 }
@@ -31,7 +38,7 @@ export function calculateVoltageDropV(
   length: number,
   crossSection: number,
   current: number,
-  phaseMode: PhaseMode = "3F"
+  phaseMode: PhaseMode = "3F",
 ): number {
   if (crossSection <= 0 || current <= 0 || length <= 0) return 0;
   const factor = phaseMode === "3F" ? SQRT3 : 1;
@@ -46,7 +53,7 @@ export function calculateVoltageDropV(
 export function calculateVoltageDropPercent(
   voltageDropV: number,
   systemVoltage: number,
-  phaseMode: PhaseMode = "3F"
+  phaseMode: PhaseMode = "3F",
 ): number {
   if (systemVoltage <= 0) return 0;
   const conductorFactor = phaseMode === "3F" ? 1 : 2;
@@ -61,7 +68,7 @@ export function calculateVoltageDropPercent(
 export function calculateAllowedVoltageDropV(
   systemVoltage: number,
   allowedPercent: number,
-  phaseMode: PhaseMode = "3F"
+  phaseMode: PhaseMode = "3F",
 ): number {
   const eps = allowedPercent / 100;
   if (phaseMode === "1F") {
@@ -77,7 +84,7 @@ export function calculateAllowedVoltageDropV(
 export function calculateMinCrossSection(
   length: number,
   current: number,
-  allowedVoltageDropV: number
+  allowedVoltageDropV: number,
 ): number {
   if (allowedVoltageDropV <= 0 || current <= 0 || length <= 0) return 0;
   return (RHO * length * current) / allowedVoltageDropV;
@@ -92,8 +99,20 @@ export function calculateShortCircuitCurrent(loopImpedance: number): number {
   return PHASE_VOLTAGE / loopImpedance;
 }
 
+/**
+ * Suggested maximum fuse rating [A] (Excel summary block "Bizt" row, e.g.
+ * `+U6/8`): a rule-of-thumb ceiling so the fuse still trips reliably on a
+ * fault this far from the source.
+ */
+export function calculateMaxFuseRating(shortCircuitCurrent: number): number {
+  if (shortCircuitCurrent <= 0) return 0;
+  return shortCircuitCurrent / FUSE_CURRENT_DIVISOR;
+}
+
 /** Build adjacency list from edges */
-function buildAdjacencyList(edges: Edge[]): Map<string, { nodeId: string; edgeId: string }[]> {
+function buildAdjacencyList(
+  edges: Edge[],
+): Map<string, { nodeId: string; edgeId: string }[]> {
   const adj = new Map<string, { nodeId: string; edgeId: string }[]>();
 
   for (const edge of edges) {
@@ -120,7 +139,7 @@ function sumDeviceCurrents(devices: Device[]): number {
 /** Run all calculations and update node/edge data */
 export function runCalculations(
   nodes: Node[],
-  edges: Edge[]
+  edges: Edge[],
 ): { nodes: Node[]; edges: Edge[] } {
   const sourceNode = findSourceNode(nodes);
   if (!sourceNode) return { nodes, edges };
@@ -132,8 +151,16 @@ export function runCalculations(
   const allowedDropV = calculateAllowedVoltageDropV(
     systemVoltage,
     allowedDropPercent,
-    phaseMode
+    phaseMode,
   );
+  // Design-current mode ("mértékadó áram", Rack workbook G column, e.g.
+  // `+G24*(1.2)/3`): each cable carries the downstream raw device total
+  // scaled by the safety factor and split across the phases. The 1F case has
+  // no Excel reference; a single phase carries everything, so only the
+  // safety factor applies.
+  const designCurrentFactor = sourceData.useDesignCurrent
+    ? DESIGN_CURRENT_SAFETY_FACTOR / (phaseMode === "3F" ? 3 : 1)
+    : 1;
 
   const adj = buildAdjacencyList(edges);
 
@@ -196,6 +223,17 @@ export function runCalculations(
   const cumulativeVoltageDrop = new Map<string, number>();
   cumulativeVoltageDrop.set(sourceNode.id, 0);
 
+  // Cumulative voltage drop in volts, summed the same way as the percentage
+  // (Excel "1. körzet" summary block "Fesz esés" row, e.g. `+N10+N29+N42`).
+  const cumulativeVoltageDropV = new Map<string, number>();
+  cumulativeVoltageDropV.set(sourceNode.id, 0);
+
+  // Accumulated loop impedance from the source down to each node, matching
+  // the Excel "1. körzet" summary block ("Hurok IMP" row: the sum of the
+  // per-cable Rh column along the path back to the source).
+  const cumulativeImpedance = new Map<string, number>();
+  cumulativeImpedance.set(sourceNode.id, 0);
+
   const edgeDataMap = new Map<string, Partial<CableEdgeData>>();
 
   const preOrder: string[] = [];
@@ -213,18 +251,26 @@ export function runCalculations(
     const parentId = parent.get(nodeId)!;
     const edgeId = edgeToChild.get(nodeId)!;
     const edge = edges.find((e) => e.id === edgeId);
-    const cableData = (edge?.data as CableEdgeData) || { length: 0, crossSection: 25 };
+    const cableData = (edge?.data as CableEdgeData) || {
+      length: 0,
+      crossSection: 25,
+    };
 
-    const current = totalCurrents.get(nodeId) || 0;
+    const current = (totalCurrents.get(nodeId) || 0) * designCurrentFactor;
     const length = cableData.length || 0;
     const crossSection = cableData.crossSection || 25;
 
     const loopImpedance = calculateLoopImpedance(length, crossSection);
-    const voltageDropV = calculateVoltageDropV(length, crossSection, current, phaseMode);
+    const voltageDropV = calculateVoltageDropV(
+      length,
+      crossSection,
+      current,
+      phaseMode,
+    );
     const voltageDropPercent = calculateVoltageDropPercent(
       voltageDropV,
       systemVoltage,
-      phaseMode
+      phaseMode,
     );
     // Per-cable allowed drop overrides the global ÁSZ value when set.
     const edgeAllowedDropV =
@@ -232,10 +278,14 @@ export function runCalculations(
         ? calculateAllowedVoltageDropV(
             systemVoltage,
             cableData.allowedVoltageDropPercent,
-            phaseMode
+            phaseMode,
           )
         : allowedDropV;
-    const requiredCrossSection = calculateMinCrossSection(length, current, edgeAllowedDropV);
+    const requiredCrossSection = calculateMinCrossSection(
+      length,
+      current,
+      edgeAllowedDropV,
+    );
     // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
 
@@ -251,6 +301,12 @@ export function runCalculations(
 
     const parentVoltageDrop = cumulativeVoltageDrop.get(parentId) || 0;
     cumulativeVoltageDrop.set(nodeId, parentVoltageDrop + voltageDropPercent);
+
+    const parentVoltageDropV = cumulativeVoltageDropV.get(parentId) || 0;
+    cumulativeVoltageDropV.set(nodeId, parentVoltageDropV + voltageDropV);
+
+    const parentImpedance = cumulativeImpedance.get(parentId) || 0;
+    cumulativeImpedance.set(nodeId, parentImpedance + loopImpedance);
   }
 
   const updatedEdges = edges.map((edge) => {
@@ -271,13 +327,15 @@ export function runCalculations(
     const data = node.data as CabinetNodeData;
     const ownCurrent = sumDeviceCurrents(data.devices || []);
     const totalCurrent = totalCurrents.get(node.id) || 0;
-    // Per Excel: a cabinet's loop impedance / Iz come from the cable feeding it
-    // (the cable's own segment), not the accumulated path back to the source.
-    const feedingEdgeId = edgeToChild.get(node.id);
-    const feedingEdge = feedingEdgeId ? edgeDataMap.get(feedingEdgeId) : undefined;
-    const loopImpedance = feedingEdge?.impedance ?? 0;
-    const shortCircuitCurrent = feedingEdge?.shortCircuitCurrent ?? 0;
+    // Per the Excel summary block ("Hurok IMP" / "Iz" rows of "1. körzet"):
+    // a cabinet's loop impedance is the accumulated path back to the source,
+    // and its Iz is 230 V over that accumulated impedance. The per-segment
+    // values stay on the edges (the Q/R columns of the cable rows).
+    const loopImpedance = cumulativeImpedance.get(node.id) ?? 0;
+    const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
     const voltageDrop = cumulativeVoltageDrop.get(node.id) || 0;
+    const voltageDropV = cumulativeVoltageDropV.get(node.id) || 0;
+    const maxFuseRating = calculateMaxFuseRating(shortCircuitCurrent);
 
     return {
       ...node,
@@ -288,6 +346,8 @@ export function runCalculations(
         loopImpedance,
         shortCircuitCurrent,
         cumulativeVoltageDrop: voltageDrop,
+        cumulativeVoltageDropV: voltageDropV,
+        maxFuseRating,
       },
     };
   });

@@ -15,7 +15,8 @@ const hu = {
   "menu.save": "Mentés",
   "menu.pdf": "PDF",
   "menu.legend": "Jelmagyarázat",
-  "menu.confirmNew": "Új rajz létrehozása? A jelenlegi nem mentett munka elveszhet.",
+  "menu.confirmNew":
+    "Új rajz létrehozása? A jelenlegi nem mentett munka elveszhet.",
   "menu.errorOpen": "Nem sikerült megnyitni a fájlt.",
   "menu.errorPdf": "Nem sikerült a PDF exportálása.",
 
@@ -85,6 +86,7 @@ const hu = {
   "calc.voltageDrop": "Fesz esés",
   "calc.loopImpedance": "Hurok IMP",
   "calc.iz": "Iz [A]",
+  "calc.maxFuse": "Bizt [A]",
 
   // ÁSZ
   "asz.title": "Áramszolgáltató (ÁSZ)",
@@ -94,6 +96,9 @@ const hu = {
   "asz.voltage": "Hálózati feszültség (V)",
   "asz.scPower": "Rövidzárlati teljesítmény (MVA)",
   "asz.allowedDrop": "Megengedett fesz esés ε [%]",
+  "asz.useDesignCurrent": "Mértékadó áram számítása",
+  "asz.useDesignCurrentHint":
+    "A kábelek árama a mögöttes berendezések összárama × 1,2 / fázisok száma. Kikapcsolva a beírt áramok változatlanul összegződnek.",
 
   // Node titles
   "node.fm": "Főmérő (FM)",
@@ -102,6 +107,8 @@ const hu = {
 
   // Cable
   "cable.title": "Kábel",
+  "cable.name": "Kábel neve / jelölése",
+  "cable.namePlaceholder": "pl. K1-1",
   "cable.length": "Kábel hossza [m]",
   "cable.allowedDrop": "Megengedett feszültségesés ε [%]",
   "cable.allowedDropHint": "Üresen hagyva az ÁSZ globális értékét használja.",
@@ -116,7 +123,8 @@ const hu = {
 
   // PDF export field visibility
   "pdf.fieldsTitle": "Megjelenített adatok",
-  "pdf.fieldsHint": "A bejelölt sorok a rajzon és a PDF exportban is megjelennek.",
+  "pdf.fieldsHint":
+    "A bejelölt sorok a rajzon és a PDF exportban is megjelennek.",
   "pdf.fieldDimensions": "Méret (hossz · mm²)",
 
   // Units / canvas labels
@@ -150,7 +158,8 @@ const en: Record<TranslationKey, string> = {
   "menu.save": "Save",
   "menu.pdf": "PDF",
   "menu.legend": "Legend",
-  "menu.confirmNew": "Start a new drawing? Your current unsaved work may be lost.",
+  "menu.confirmNew":
+    "Start a new drawing? Your current unsaved work may be lost.",
   "menu.errorOpen": "Could not open the file.",
   "menu.errorPdf": "Could not export the PDF.",
 
@@ -220,6 +229,7 @@ const en: Record<TranslationKey, string> = {
   "calc.voltageDrop": "Voltage drop",
   "calc.loopImpedance": "Loop imp.",
   "calc.iz": "Iz [A]",
+  "calc.maxFuse": "Max fuse [A]",
 
   // ÁSZ
   "asz.title": "Utility Supply",
@@ -229,6 +239,9 @@ const en: Record<TranslationKey, string> = {
   "asz.voltage": "Mains voltage (V)",
   "asz.scPower": "Short-circuit power (MVA)",
   "asz.allowedDrop": "Allowed voltage drop ε [%]",
+  "asz.useDesignCurrent": "Use design current",
+  "asz.useDesignCurrentHint":
+    "Cable currents become the downstream device total × 1.2 / number of phases. When off, entered currents are summed as-is.",
 
   // Node titles
   "node.fm": "Main Meter (MM)",
@@ -237,6 +250,8 @@ const en: Record<TranslationKey, string> = {
 
   // Cable
   "cable.title": "Cable",
+  "cable.name": "Cable name / designation",
+  "cable.namePlaceholder": "e.g. K1-1",
   "cable.length": "Cable length [m]",
   "cable.allowedDrop": "Allowed voltage drop ε [%]",
   "cable.allowedDropHint": "Leave empty to use the global ÁSZ value.",
@@ -295,8 +310,10 @@ export function useElementName(): (
 ) => string {
   const language = useSettingsStore((s) => s.language);
   return (raw, kind) => {
-    if (kind === "asz" && raw === "ÁSZ") return translate(language, "node.asz.name");
-    if (kind === "fm" && (raw === "FM" || raw === "")) return translate(language, "node.fm.name");
+    if (kind === "asz" && raw === "ÁSZ")
+      return translate(language, "node.asz.name");
+    if (kind === "fm" && (raw === "FM" || raw === ""))
+      return translate(language, "node.fm.name");
     if (kind === "cabinet" && raw === "Új szekrény")
       return translate(language, "cabinet.defaultLabel");
     return raw;

@@ -221,21 +221,21 @@ export const useFlowStore = create<FlowStore>()(
   },
 
   autoLayout: () => {
-    const { nodes, edges } = autoLayoutSchematic(
-      get().nodes,
-      get().edges,
-      get().selectedNodeId
-    );
+    const { nodes, edges } = autoLayoutSchematic(get().nodes, get().edges);
     set({ nodes, edges });
   },
 
-  loadProject: (project) =>
+  loadProject: (project) => {
+    // Recompute instead of trusting the saved values, so files written by
+    // older engine versions show up-to-date results.
+    const { nodes, edges } = runCalculations(project.nodes, project.edges);
     set({
-      nodes: project.nodes,
-      edges: project.edges,
+      nodes,
+      edges,
       selectedNodeId: null,
       selectedEdgeId: null,
-    }),
+    });
+  },
 
   newProject: () =>
     set({
@@ -263,6 +263,8 @@ export const useFlowStore = create<FlowStore>()(
       // mismatches; see useProjectHydration.
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
+        // Refresh values persisted by older engine versions.
+        state?.runCalculations();
         state?.setHasHydrated(true);
       },
     },

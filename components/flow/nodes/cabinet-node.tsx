@@ -22,7 +22,7 @@ import {
   resolveDesignationTag,
 } from "@/lib/downstream";
 import { useT, useSideLabel, useElementName } from "@/lib/i18n";
-import { cn } from "@/lib/utils";
+import { cn, formatCalc } from "@/lib/utils";
 
 function SideHandle({
   position,
@@ -161,24 +161,35 @@ function CabinetInfo({
         </div>
       ))}
 
-      {/* Calculated values (matches Excel summary table T-AD rows 4-6) */}
+      {/* Calculated values (matches Excel summary table T-AD rows 4-7) */}
+      {data.cumulativeVoltageDropV !== undefined &&
+        data.cumulativeVoltageDropV > 0 && (
+          <div className="font-medium text-blue-600">
+            {t("calc.voltageDrop")}: {formatCalc(data.cumulativeVoltageDropV)} V
+          </div>
+        )}
       {data.cumulativeVoltageDrop !== undefined &&
         data.cumulativeVoltageDrop > 0 && (
           <div className="font-medium text-blue-600">
-            {t("calc.voltageDrop")}: {data.cumulativeVoltageDrop.toFixed(1)}
+            {t("calc.voltageDrop")}: {formatCalc(data.cumulativeVoltageDrop)} %
           </div>
         )}
       {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
         <div className="font-medium text-blue-600">
-          {t("calc.loopImpedance")}: {data.loopImpedance.toFixed(3)}
+          {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance)} Ω
         </div>
       )}
       {data.shortCircuitCurrent !== undefined &&
         data.shortCircuitCurrent > 0 && (
           <div className="font-medium text-blue-600">
-            {t("calc.iz")}: {data.shortCircuitCurrent.toFixed(1)}
+            {t("calc.iz")}: {formatCalc(data.shortCircuitCurrent)}
           </div>
         )}
+      {data.maxFuseRating !== undefined && data.maxFuseRating > 0 && (
+        <div className="font-medium text-blue-600">
+          {t("calc.maxFuse")}: {formatCalc(data.maxFuseRating)}
+        </div>
+      )}
     </div>
   );
 }

@@ -147,14 +147,14 @@ pnpm verify:calc
 
 ## Tech Stack
 
-| Layer     | Library                                           |
-| --------- | -------------------------------------------------- |
-| Framework | [Next.js 16](https://nextjs.org)                  |
-| Canvas    | [React Flow](https://reactflow.dev)               |
-| State     | [Zustand](https://zustand-demo.pmnd.rs)           |
-| UI        | [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS |
+| Layer     | Library                                                                                               |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| Framework | [Next.js 16](https://nextjs.org)                                                                      |
+| Canvas    | [React Flow](https://reactflow.dev)                                                                   |
+| State     | [Zustand](https://zustand-demo.pmnd.rs)                                                               |
+| UI        | [shadcn/ui](https://ui.shadcn.com) + Tailwind CSS                                                     |
 | PDF       | [jsPDF](https://github.com/parallax/jsPDF) + [html-to-image](https://github.com/bubkoo/html-to-image) |
-| Language  | TypeScript                                        |
+| Language  | TypeScript                                                                                            |
 
 ## Design Decisions
 

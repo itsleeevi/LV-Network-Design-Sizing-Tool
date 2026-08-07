@@ -178,3 +178,43 @@ export function getLabelPlacement(
 
   return priority[0] ?? "bottom";
 }
+
+/**
+ * The side(s) a node's own label occupies, so other elements (a cable's info
+ * box in particular) can avoid landing in the same spot. Cabinet/ÁSZ/FM
+ * (feed) labels are wire-avoiding, so this mirrors the same computation the
+ * node component itself uses. FM/FE (Főmérő/Főelosztó) labels are fixed
+ * (name above, info below), so both sides always count as occupied. Unknown
+ * node types return an empty set.
+ */
+export function getNodeLabelSides(
+  node: Node,
+  edges: Edge[],
+  nodes: Node[],
+): Set<LabelPlacement> {
+  switch (node.type) {
+    case "cabinet":
+      return new Set([
+        getLabelPlacement(getOccupiedSides(node.id, edges, nodes)),
+      ]);
+    case "asz":
+      return new Set([
+        getLabelPlacement(
+          getOccupiedSides(node.id, edges, nodes),
+          ASZ_LABEL_PRIORITY,
+        ),
+      ]);
+    case "feed":
+      return new Set([
+        getLabelPlacement(
+          getOccupiedSides(node.id, edges, nodes),
+          FM_LABEL_PRIORITY,
+        ),
+      ]);
+    case "fm":
+    case "fe":
+      return new Set(["top", "bottom"]);
+    default:
+      return new Set();
+  }
+}
