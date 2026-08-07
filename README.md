@@ -15,10 +15,10 @@ The LV Network Design & Sizing Tool lets users build a low-voltage (0.4 kV) unde
 Users can add a utility supply, a main meter, a main distributor, and roadside distribution cabinets, connect them with cables, assign device loads, and calculate:
 
 - Required cable cross-section
-- Segment and cumulative voltage drop
-- Loop impedance
-- Short-circuit current
-- Downstream current across the network
+- Segment and cumulative voltage drop, in both volts and percent
+- Cumulative loop impedance and short-circuit current at every cabinet
+- Suggested maximum fuse rating ("Bizt") at every cabinet
+- Downstream current across the network, optionally scaled to a design current with a configurable safety factor
 
 Projects can be automatically arranged, saved locally or exported to a file, and printed as a PDF schematic.
 
@@ -28,10 +28,11 @@ Projects can be automatically arranged, saved locally or exported to a file, and
 
 - An interactive node-based electrical schematic editor
 - Custom nodes and cable connections built on React Flow
-- A graph-based calculation engine that propagates electrical loads through the network
-- Automatic node layout and collision-aware cabinet label positioning
-- Cable sizing, voltage-drop, loop impedance, and short-circuit current calculations
-- Editable property panels for every network element and cable
+- A graph-based calculation engine that propagates electrical loads and accumulates voltage drop and loop impedance along the full path from the source through the network
+- An optional "design current" mode that scales downstream loads by a configurable safety factor, mirroring how the reference spreadsheet sizes cables
+- Full-network automatic layout with uniform spacing and collision-aware label positioning for both node and cable labels
+- Cable sizing, voltage-drop, loop impedance, short-circuit current, and maximum fuse rating calculations
+- Editable property panels for every network element and cable, including custom cable names/designations
 - Project autosave to localStorage, so a refresh never loses work
 - Import and export using a custom `.wire.json` project file format
 - Print-ready PDF export with a diagram legend and per-cable field toggles
@@ -71,22 +72,22 @@ The engine treats the network as a graph rooted at the utility supply (ÁSZ) nod
 
 1. It builds an adjacency list from the cable edges.
 2. It runs a breadth-first traversal from the supply node to establish parent/child direction for every element.
-3. It walks the tree in post-order, aggregating each cabinet's own device load with everything downstream of it, so every cable carries the total current of everything it feeds.
-4. It walks the tree again in pre-order, calculating each cable's sizing, voltage drop, and loop impedance from that current, and accumulating voltage drop from the source outward.
-5. Cabinet nodes are annotated with their own load, total downstream load, cumulative voltage drop, and the short-circuit current at their feeding cable.
+3. It walks the tree in post-order, aggregating each cabinet's own device load with everything downstream of it, so every cable carries the total current of everything it feeds. If the supply node's "design current" option is enabled, downstream totals are scaled by a safety factor (device total x 1.2 / number of phases) instead of using the raw summed device current.
+4. It walks the tree again in pre-order, calculating each cable's sizing, voltage drop, and loop impedance from that current, and accumulating both voltage drop and loop impedance from the source outward, cable by cable, along the full path to each node (not just the last cable feeding it).
+5. Cabinet nodes are annotated with their own load, total downstream load, cumulative voltage drop (in volts and as a percentage), the cumulative loop impedance and short-circuit current for the full path back to the source, and the suggested maximum fuse rating at that point.
 
 ### Calculated Values
 
 For each cable segment, the engine calculates:
 
-- Total carried current
+- Total carried current (optionally as a design current)
 - Required minimum conductor cross-section
 - Voltage drop in volts
 - Voltage drop as a percentage
 - Loop impedance
 - Short-circuit current
 
-Cabinet nodes also display their own load, downstream load, cumulative voltage drop, and the short-circuit current at that point in the network.
+Cabinet nodes also display their own load, downstream load, cumulative voltage drop (volts and percent), the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating ("Bizt") derived from that short-circuit current.
 
 The engine supports both three-phase (3F, 400 V) and single-phase (1F, 230 V) systems, since the underlying formulas and conductor factors differ between the two.
 
@@ -110,22 +111,34 @@ Short-circuit current:
 Iz = 230 V / Rh
 ```
 
+Design current, when the ASZ node's "design current" option is enabled:
+
+```text
+I_design = (raw device total x 1.2) / number of phases
+```
+
+Suggested maximum fuse rating:
+
+```text
+Bizt = Iz / 8
+```
+
 Where `L` is cable length, `A` is conductor cross-section, `I` is current, and `rho` is the resistivity of aluminium conductor (the only material this tool models, matching the reference calculation).
 
 ## Calculation Verification
 
-The calculation engine is verified against an existing Excel-based reference calculation (`UHK szamitas pelda.xlsx`).
+The calculation engine is verified against existing Excel-based reference calculations: the `3F` and `1. körzet` sheets of `UHK szamitas pelda.xlsx`, and `examples/UHK szamitas_Rack_v1.xlsx` (which fixes the design current factor and cumulative impedance accumulation).
 
-The verification harness in `scripts/verify-calculations.ts` rebuilds the reference network as nodes and edges, runs the production `runCalculations` engine (the exact same code path the app uses), and compares the output against the cached values Excel itself computed, using numerical tolerances.
+The verification harness in `scripts/verify-calculations.ts` rebuilds each reference network as nodes and edges, runs the production `runCalculations` engine (the exact same code path the app uses), and compares the output against the cached values Excel itself computed, using numerical tolerances. It also documents which Excel summary cells are known to be wrong (due to a shifted column) so the harness doesn't chase a bug in the spreadsheet instead of the engine.
 
 Verified values include:
 
-- Downstream current
+- Downstream current, including design current mode
 - Required cable cross-section
-- Voltage drop in volts and as a percentage
-- Loop impedance
+- Voltage drop in volts and as a percentage, per cable and cumulative
+- Loop impedance, per cable and cumulative
 - Short-circuit current
-- Cumulative voltage drop
+- Suggested maximum fuse rating ("Bizt")
 
 Run the verification:
 
@@ -137,13 +150,13 @@ pnpm verify:calc
 
 - **Interactive canvas**: drag, pan, and zoom a node-based schematic diagram
 - **Network elements**: Utility Supply (ÁSZ), Main Meter (FM), Main Distributor (FE), and distribution cabinets / feeder pillars (ESZ)
-- **Wire mode**: connect elements with cables by switching modes
-- **Auto layout**: automatically position a newly connected element relative to its neighbor
-- **Calculations**: cable sizing, voltage drop, loop impedance, and short-circuit current across the whole network
+- **Wire mode**: connect elements with cables by switching modes, and optionally name each cable
+- **Auto layout**: re-flow the whole network from the supply node with uniform, collision-avoiding spacing
+- **Calculations**: cable sizing, voltage drop, cumulative loop impedance, short-circuit current, and maximum fuse rating across the whole network, with an optional design-current mode
 - **Save & open**: save projects to a file, with automatic localStorage autosave that survives refreshes
 - **PDF export**: export the drawing to a print-ready PDF with a legend, with per-cable control over which calculated values are shown
 - **Bilingual**: full Hungarian / English UI
-- **Property editor**: select any element or cable to inspect and edit its data and computed values
+- **Property editor**: select any element or cable to inspect and edit its data and computed values, all consistently formatted to 3 decimal places with units
 
 ## Tech Stack
 
@@ -220,4 +233,4 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - The demo UI currently defaults to Hungarian; a browser-language-aware default with a persisted toggle is a planned improvement.
 - The verification script is a standalone harness, not yet wired into `pnpm test` or CI. Porting it to Vitest and adding a GitHub Actions workflow is the next step toward a fully production-grade pipeline.
 - Only aluminium conductors are modeled, matching the reference calculation this tool was built against.
-- The auto-layout engine positions one newly connected node at a time rather than re-flowing the whole diagram; a full graph-layout pass (e.g. Dagre/ELK) would help with very large networks.
+- Auto layout uses a fixed breadth-first spacing rule rather than a general-purpose graph-layout algorithm; a full graph-layout pass (e.g. Dagre/ELK) would help with very large or irregular networks.
