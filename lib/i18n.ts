@@ -98,7 +98,9 @@ const hu = {
   "asz.allowedDrop": "Megengedett fesz esés ε [%]",
   "asz.useDesignCurrent": "Mértékadó áram számítása",
   "asz.useDesignCurrentHint":
-    "A kábelek árama a mögöttes berendezések összárama × 1,2 / fázisok száma. Kikapcsolva a beírt áramok változatlanul összegződnek.",
+    "A kábelek árama a mögöttes berendezések összárama × szorzó / fázisok száma. Kikapcsolva a beírt áramok változatlanul összegződnek.",
+  "asz.designCurrentSafetyFactor": "Mértékadó áram szorzója",
+  "asz.designCurrentSafetyFactorHint": "Alapértelmezett: 1,2.",
 
   // Node titles
   "node.fm": "Főmérő (FM)",
@@ -113,6 +115,9 @@ const hu = {
   "cable.allowedDrop": "Megengedett feszültségesés ε [%]",
   "cable.allowedDropHint": "Üresen hagyva az ÁSZ globális értékét használja.",
   "cable.allowedDropV": "Megengedett mértékadó feszültségesés é [V]",
+  "cable.skipDesignCurrentFactor": "Mértékadó áram szorzó nélkül",
+  "cable.skipDesignCurrentFactorHint":
+    "Ennél a kábelnél a mögöttes berendezések nyers összárama számít, szorzó nélkül.",
   "cable.resistivity": "AL fajlagos ellenállása Ω mm² / m",
   "cable.crossSection": "Választott kábel keresztmetszete [mm²]",
   "cable.minCrossSection": "Szükséges minimális keresztmetszet [mm²]",
@@ -241,7 +246,9 @@ const en: Record<TranslationKey, string> = {
   "asz.allowedDrop": "Allowed voltage drop ε [%]",
   "asz.useDesignCurrent": "Use design current",
   "asz.useDesignCurrentHint":
-    "Cable currents become the downstream device total × 1.2 / number of phases. When off, entered currents are summed as-is.",
+    "Cable currents become the downstream device total × safety factor / number of phases. When off, entered currents are summed as-is.",
+  "asz.designCurrentSafetyFactor": "Design current safety factor",
+  "asz.designCurrentSafetyFactorHint": "Default: 1.2.",
 
   // Node titles
   "node.fm": "Main Meter (MM)",
@@ -256,6 +263,9 @@ const en: Record<TranslationKey, string> = {
   "cable.allowedDrop": "Allowed voltage drop ε [%]",
   "cable.allowedDropHint": "Leave empty to use the global ÁSZ value.",
   "cable.allowedDropV": "Allowed reference voltage drop é [V]",
+  "cable.skipDesignCurrentFactor": "Design current without safety factor",
+  "cable.skipDesignCurrentFactorHint":
+    "This cable uses the raw downstream device total, without the safety factor.",
   "cable.resistivity": "AL resistivity Ω mm² / m",
   "cable.crossSection": "Selected cable cross-section [mm²]",
   "cable.minCrossSection": "Required minimum cross-section [mm²]",

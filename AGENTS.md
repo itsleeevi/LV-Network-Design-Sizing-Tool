@@ -55,9 +55,11 @@ The UI, code comments, and data model use Hungarian electrical-engineering abbre
 
 ## Critical Safety Rule: The Calculation Engine
 
-`lib/calculations.ts` and `lib/downstream.ts` implement formulas that were reverse-engineered from, and are verified against, existing Excel-based reference calculations: the `3F` sheet of `UHK szamitas pelda.xlsx` (a single cable chain) and the `1. körzet` sheet of `examples/UHK szamitas_Rack_v1.xlsx` (a branching network that fixes how per-cabinet loop impedance and short-circuit current accumulate along the path back to the source, and the design current factor: raw device total × 1.2 / phases, applied when the ÁSZ node's `useDesignCurrent` is on). The numbers must keep matching those spreadsheets.
+`lib/calculations.ts` and `lib/downstream.ts` implement formulas that were reverse-engineered from, and are verified against, existing Excel-based reference calculations: the `3F` sheet of `UHK szamitas pelda.xlsx` (a single cable chain) and the `1. körzet` sheet of `examples/UHK szamitas_Rack_v1.xlsx` (a branching network that fixes how per-cabinet loop impedance and short-circuit current accumulate along the path back to the source, and the design current factor: raw device total × safety factor (default 1.2, editable via the ÁSZ node's `designCurrentSafetyFactor`) / phases, applied when the ÁSZ node's `useDesignCurrent` is on). The numbers must keep matching those spreadsheets.
 
 Not every cell in every sheet is usable as a reference. The Rack workbook's summary block reports cumulative voltage drop in percent under its `Hurok IMP` label, because an inserted column shifted the calculated columns one to the right and that row's formula was never updated to follow. `scripts/verify-calculations.ts` documents which cells this affects and how the expected cumulative values are derived instead. Before treating a disagreement between the app and a spreadsheet as an engine bug, check whether the spreadsheet agrees with itself.
+
+Individual cables can also opt out of the design current factor entirely via `CableEdgeData.skipDesignCurrentFactor` (confirmed against the Rack workbook's K1-5 row, which deliberately carries the raw downstream total with no ×1.2/3). This is a genuine, per-cable engineering exception, not a spreadsheet mistake, so do not "fix" it by removing the flag or applying the factor uniformly.
 
 If you touch `runCalculations`, any function in `lib/calculations.ts`, or the graph traversal in `lib/downstream.ts`:
 

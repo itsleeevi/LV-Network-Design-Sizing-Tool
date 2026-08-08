@@ -158,8 +158,10 @@ export function runCalculations(
   // scaled by the safety factor and split across the phases. The 1F case has
   // no Excel reference; a single phase carries everything, so only the
   // safety factor applies.
+  const safetyFactor =
+    sourceData.designCurrentSafetyFactor ?? DESIGN_CURRENT_SAFETY_FACTOR;
   const designCurrentFactor = sourceData.useDesignCurrent
-    ? DESIGN_CURRENT_SAFETY_FACTOR / (phaseMode === "3F" ? 3 : 1)
+    ? safetyFactor / (phaseMode === "3F" ? 3 : 1)
     : 1;
 
   const adj = buildAdjacencyList(edges);
@@ -256,7 +258,12 @@ export function runCalculations(
       crossSection: 25,
     };
 
-    const current = (totalCurrents.get(nodeId) || 0) * designCurrentFactor;
+    // A cable can opt out of design-current scaling (the Rack workbook's
+    // K1-5 row) and carry the raw downstream total instead.
+    const appliedFactor = cableData.skipDesignCurrentFactor
+      ? 1
+      : designCurrentFactor;
+    const current = (totalCurrents.get(nodeId) || 0) * appliedFactor;
     const length = cableData.length || 0;
     const crossSection = cableData.crossSection || 25;
 

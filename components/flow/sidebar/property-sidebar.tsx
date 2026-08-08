@@ -23,6 +23,7 @@ import {
   CABLE_CROSS_SECTIONS,
   COMMON_DEVICES,
   ALUMINIUM_CABLE,
+  DESIGN_CURRENT_SAFETY_FACTOR,
 } from "@/types/electrical";
 import {
   getDownstreamChildLabels,
@@ -422,6 +423,33 @@ function AszProperties({
           {t("asz.useDesignCurrentHint")}
         </p>
       </div>
+
+      {data.useDesignCurrent && (
+        <div className="space-y-2">
+          <Label htmlFor="designCurrentSafetyFactor">
+            {t("asz.designCurrentSafetyFactor")}
+          </Label>
+          <Input
+            id="designCurrentSafetyFactor"
+            type="number"
+            min={0}
+            step={0.1}
+            value={
+              data.designCurrentSafetyFactor ?? DESIGN_CURRENT_SAFETY_FACTOR
+            }
+            onChange={(e) => {
+              const raw = e.target.value;
+              updateNodeData(nodeId, {
+                designCurrentSafetyFactor:
+                  raw === "" ? undefined : parseFloat(raw),
+              });
+            }}
+          />
+          <p className="text-xs text-muted-foreground">
+            {t("asz.designCurrentSafetyFactorHint")}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -595,6 +623,27 @@ function CableProperties({
           {t("cable.allowedDropHint")}
         </p>
       </div>
+
+      {aszData?.useDesignCurrent && (
+        <div className="space-y-1">
+          <label className="flex cursor-pointer items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 cursor-pointer accent-blue-600"
+              checked={data.skipDesignCurrentFactor ?? false}
+              onChange={(e) =>
+                updateEdgeData(edgeId, {
+                  skipDesignCurrentFactor: e.target.checked,
+                })
+              }
+            />
+            <span>{t("cable.skipDesignCurrentFactor")}</span>
+          </label>
+          <p className="text-xs text-muted-foreground">
+            {t("cable.skipDesignCurrentFactorHint")}
+          </p>
+        </div>
+      )}
 
       <div className="rounded-md border bg-muted/40 px-2.5 py-2 text-xs leading-snug text-muted-foreground">
         <p className="font-medium text-foreground">{t("cable.resistivity")}</p>

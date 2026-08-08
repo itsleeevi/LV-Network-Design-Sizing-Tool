@@ -149,11 +149,11 @@ function buildGraph(): { nodes: Node[]; edges: Edge[] } {
  * the workbook's G column, and the raw subtree totals reproduce its H
  * column.
  *
- * Known exception: the workbook's K1-5 row skips the ×1.2/3 factor (G10 is
- * `+G9`, the raw 1 A, unlike every other cable row), so for K1-5 the engine's
- * uniform rule gives 0.4 A instead of the workbook's 1 A. K1-5's current,
- * ΔU, and everything downstream of it (ESZ1-5's cumulative ΔU) are asserted
- * against the engine's uniform rule, not that inconsistent row.
+ * The workbook's K1-5 row skips the ×1.2/3 factor (G10 is `+G9`, the raw
+ * 1 A, unlike every other cable row). Zoltán confirmed this is intentional,
+ * not a workbook slip, so K1-5 sets `skipDesignCurrentFactor` to reproduce
+ * it: that cable carries the raw downstream total, everything else still
+ * gets scaled.
  */
 function buildRackGraph(): { nodes: Node[]; edges: Edge[] } {
   const cabinet = (id: string, label: string, devices: Device[]): Node => ({
@@ -168,12 +168,13 @@ function buildRackGraph(): { nodes: Node[]; edges: Edge[] } {
     source: string,
     target: string,
     length: number,
+    extra?: Partial<CableEdgeData>,
   ): Edge => ({
     id,
     source,
     target,
     type: "wire",
-    data: { length, crossSection: 50 } as CableEdgeData,
+    data: { length, crossSection: 50, ...extra } as CableEdgeData,
   });
 
   const nodes: Node[] = [
@@ -202,7 +203,7 @@ function buildRackGraph(): { nodes: Node[]; edges: Edge[] } {
     wire("K1-2", "fe11", "esz12", 87.1),
     wire("K1-3", "esz12", "esz13", 278.8),
     wire("K1-4", "esz12", "esz14", 52.3),
-    wire("K1-5", "esz14", "esz15", 293),
+    wire("K1-5", "esz14", "esz15", 293, { skipDesignCurrentFactor: true }),
   ];
 
   return { nodes, edges };
@@ -225,10 +226,17 @@ const RACK_DU_V = {
   k12: 1.3116513153, //   O22
   k13: 0.5524327553, //   O17
   k14: 0.6839624766, //   O14
-  // NOT O10 (0.2902847871): that cell uses the workbook's un-scaled 1 A
-  // (see the K1-5 current exception above). This is ΔU at the engine's
-  // uniformly-applied 0.4 A design current instead.
-  k15: 0.1161139149,
+  k15: 0.2902847871, //   O10, at the un-scaled 1 A (see K1-5 note above)
+};
+
+// Per-cable voltage drop [%] straight from the Rack workbook's P column.
+const RACK_DU_PERCENT = {
+  kfe1: 0.0211026142, //  P29
+  k11: 0.8876472868, //   P25
+  k12: 0.3279128288, //   P22
+  k13: 0.1381081888, //   P17
+  k14: 0.1709906192, //   P14
+  k15: 0.0725711968, //   P10, at the un-scaled 1 A
 };
 
 function verifyRackGraph() {
@@ -264,14 +272,15 @@ function verifyRackGraph() {
   approx(edge("K1-2").current, 15.2, "K1-2 design current [A]"); //       G22
   approx(edge("K1-3").current, 2, "K1-3 design current [A]"); //          G17
   approx(edge("K1-4").current, 13.2, "K1-4 design current [A]"); //       G14
-  // Workbook G10 shows 1 A because that row skips the ×1.2/3 factor; the
-  // engine applies the rule uniformly: 1 × 1.2 / 3.
-  approx(edge("K1-5").current, 0.4, "K1-5 design current [A]");
-  approx(edge("K-FE-1").voltageDropV, 0.0844104569, "K-FE-1 ΔU [V]"); //  O29
-  approx(edge("K1-1").voltageDropV, 3.5505891473, "K1-1 ΔU [V]"); //      O25
-  approx(edge("K1-2").voltageDropV, 1.3116513153, "K1-2 ΔU [V]"); //      O22
-  approx(edge("K1-3").voltageDropV, 0.5524327553, "K1-3 ΔU [V]"); //      O17
-  approx(edge("K1-4").voltageDropV, 0.6839624766, "K1-4 ΔU [V]"); //      O14
+  // Workbook G10 is 1 A (the raw, un-scaled device total): K1-5 opts out of
+  // the ×1.2/3 factor via skipDesignCurrentFactor.
+  approx(edge("K1-5").current, 1, "K1-5 design current [A]");
+  approx(edge("K-FE-1").voltageDropV, RACK_DU_V.kfe1, "K-FE-1 ΔU [V]"); // O29
+  approx(edge("K1-1").voltageDropV, RACK_DU_V.k11, "K1-1 ΔU [V]"); //      O25
+  approx(edge("K1-2").voltageDropV, RACK_DU_V.k12, "K1-2 ΔU [V]"); //      O22
+  approx(edge("K1-3").voltageDropV, RACK_DU_V.k13, "K1-3 ΔU [V]"); //      O17
+  approx(edge("K1-4").voltageDropV, RACK_DU_V.k14, "K1-4 ΔU [V]"); //      O14
+  approx(edge("K1-5").voltageDropV, RACK_DU_V.k15, "K1-5 ΔU [V]"); //      O10
 
   console.log("\n=== Rack workbook raw subtree totals (H column) ===");
   approx(node("FE1.1").totalCurrent, 71, "FE1.1 raw total [A]"); //   H29
@@ -283,12 +292,29 @@ function verifyRackGraph() {
 
   console.log("\n=== Rack workbook cumulative ΔU% (path sums of column P) ===");
   // The workbook's shifted "Hurok IMP" summary row (U5:Z5) sums column P,
-  // so it happens to be a valid reference for cumulative ΔU%.
-  approx(node("FE1.1").cumulativeVoltageDrop, 0.0211026142, "FE1.1 ΔU [%]"); // Z5
-  approx(node("ESZ1-1").cumulativeVoltageDrop, 0.9087499011, "ESZ1-1 ΔU [%]"); // Y5
-  approx(node("ESZ1-2").cumulativeVoltageDrop, 0.3490154431, "ESZ1-2 ΔU [%]"); // X5
-  approx(node("ESZ1-3").cumulativeVoltageDrop, 0.4871236319, "ESZ1-3 ΔU [%]"); // W5
-  approx(node("ESZ1-4").cumulativeVoltageDrop, 0.5200060622, "ESZ1-4 ΔU [%]"); // V5
+  // so it happens to be a valid reference for cumulative ΔU% (except U5,
+  // which the workbook itself derives from the un-scaled K1-5, matching
+  // RACK_DU_PERCENT.k15 here too).
+  const percentCases: [string, number[]][] = [
+    ["FE1.1", [RACK_DU_PERCENT.kfe1]],
+    ["ESZ1-1", [RACK_DU_PERCENT.kfe1, RACK_DU_PERCENT.k11]],
+    ["ESZ1-2", [RACK_DU_PERCENT.kfe1, RACK_DU_PERCENT.k12]],
+    ["ESZ1-3", [RACK_DU_PERCENT.kfe1, RACK_DU_PERCENT.k12, RACK_DU_PERCENT.k13]],
+    ["ESZ1-4", [RACK_DU_PERCENT.kfe1, RACK_DU_PERCENT.k12, RACK_DU_PERCENT.k14]],
+    [
+      "ESZ1-5",
+      [
+        RACK_DU_PERCENT.kfe1,
+        RACK_DU_PERCENT.k12,
+        RACK_DU_PERCENT.k14,
+        RACK_DU_PERCENT.k15,
+      ],
+    ],
+  ];
+  for (const [label, segments] of percentCases) {
+    const percent = segments.reduce((sum, p) => sum + p, 0);
+    approx(node(label).cumulativeVoltageDrop, percent, `${label} ΔU [%]`);
+  }
 
   console.log(
     "\n=== Rack workbook cabinets (cumulative Rh along path, Iz = 230/Rh) ===",

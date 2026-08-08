@@ -63,11 +63,17 @@ export type AszNodeData = {
   phaseMode?: PhaseMode;
   /**
    * When true, cable currents are design currents ("mértékadó áram"): the
-   * downstream raw device total × DESIGN_CURRENT_SAFETY_FACTOR / number of
+   * downstream raw device total × designCurrentSafetyFactor / number of
    * phases (the Rack workbook's G column, e.g. `+G24*(1.2)/3`). Off by
    * default so projects with pre-derived currents keep their numbers.
    */
   useDesignCurrent?: boolean;
+  /**
+   * Safety factor applied to raw device totals in design-current mode.
+   * Defaults to DESIGN_CURRENT_SAFETY_FACTOR (1.2, the Rack workbook's
+   * factor) when unset, but is editable per project.
+   */
+  designCurrentSafetyFactor?: number;
 };
 
 /** Safety factor applied to raw device totals in design-current mode. */
@@ -112,6 +118,13 @@ export type CableEdgeData = {
    * in the PDF export. A missing flag falls back to CABLE_PDF_FIELD_DEFAULTS.
    */
   pdfFields?: Partial<Record<CablePdfFieldKey, boolean>>;
+  /**
+   * When the ÁSZ node's design-current mode is on, this cable still carries
+   * the raw downstream device total instead of being scaled by the safety
+   * factor (the Rack workbook's K1-5 row, e.g. `+G9` with no ×1.2/3). Has no
+   * effect when design-current mode is off. Off by default.
+   */
+  skipDesignCurrentFactor?: boolean;
   // Calculated values
   /** Total current flowing through [A] */
   current?: number;

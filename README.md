@@ -72,7 +72,7 @@ The engine treats the network as a graph rooted at the utility supply (ÁSZ) nod
 
 1. It builds an adjacency list from the cable edges.
 2. It runs a breadth-first traversal from the supply node to establish parent/child direction for every element.
-3. It walks the tree in post-order, aggregating each cabinet's own device load with everything downstream of it, so every cable carries the total current of everything it feeds. If the supply node's "design current" option is enabled, downstream totals are scaled by a safety factor (device total x 1.2 / number of phases) instead of using the raw summed device current.
+3. It walks the tree in post-order, aggregating each cabinet's own device load with everything downstream of it, so every cable carries the total current of everything it feeds. If the supply node's "design current" option is enabled, downstream totals are scaled by an editable safety factor (device total x factor / number of phases, factor defaults to 1.2) instead of using the raw summed device current. Individual cables can also opt out of that scaling and keep carrying the raw total.
 4. It walks the tree again in pre-order, calculating each cable's sizing, voltage drop, and loop impedance from that current, and accumulating both voltage drop and loop impedance from the source outward, cable by cable, along the full path to each node (not just the last cable feeding it).
 5. Cabinet nodes are annotated with their own load, total downstream load, cumulative voltage drop (in volts and as a percentage), the cumulative loop impedance and short-circuit current for the full path back to the source, and the suggested maximum fuse rating at that point.
 
@@ -114,8 +114,10 @@ Iz = 230 V / Rh
 Design current, when the ASZ node's "design current" option is enabled:
 
 ```text
-I_design = (raw device total x 1.2) / number of phases
+I_design = (raw device total x safety factor) / number of phases
 ```
+
+The safety factor defaults to 1.2 but is editable per project, and any individual cable can be flagged to skip it and carry the raw total instead.
 
 Suggested maximum fuse rating:
 
