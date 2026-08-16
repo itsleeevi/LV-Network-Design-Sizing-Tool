@@ -8,9 +8,42 @@ import type {
 } from "@/types/electrical";
 import {
   CABLE_RESISTIVITY,
+  CABLE_CROSS_SECTIONS,
   DESIGN_CURRENT_SAFETY_FACTOR,
+  DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2,
   FUSE_CURRENT_DIVISOR,
 } from "@/types/electrical";
+
+const SORTED_CROSS_SECTIONS: number[] = [...CABLE_CROSS_SECTIONS].sort(
+  (a, b) => a - b,
+);
+const SMALLEST_CROSS_SECTION = SORTED_CROSS_SECTIONS[0];
+
+/** Safety net for the recommendation loop; each pass fixes one cable. */
+const MAX_RECOMMENDATION_PASSES = 40;
+
+/**
+ * Round required cross-section up to the next standard cable size [mm²].
+ * Returns the largest standard value when required exceeds all standards.
+ */
+export function nextStandardCrossSection(required: number): number {
+  return (
+    SORTED_CROSS_SECTIONS.find((s) => s >= required) ??
+    SORTED_CROSS_SECTIONS[SORTED_CROSS_SECTIONS.length - 1]
+  );
+}
+
+/**
+ * Continuous thermal minimum cross-section [mm²] from a current-density floor.
+ * Returns 0 when density is disabled (<= 0) or there is no current.
+ */
+export function calculateThermalMinCrossSection(
+  current: number,
+  maxCurrentDensityAPerMm2: number,
+): number {
+  if (maxCurrentDensityAPerMm2 <= 0 || current <= 0) return 0;
+  return current / maxCurrentDensityAPerMm2;
+}
 
 const SQRT3 = Math.sqrt(3);
 const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
@@ -238,6 +271,12 @@ export function runCalculations(
 
   const edgeDataMap = new Map<string, Partial<CableEdgeData>>();
 
+  /** Per-cable inputs the cross-section recommendation pass needs. */
+  const edgeLoads = new Map<
+    string,
+    { length: number; current: number; requiredCrossSection: number }
+  >();
+
   const preOrder: string[] = [];
   function dfsPreOrder(nodeId: string) {
     preOrder.push(nodeId);
@@ -296,6 +335,11 @@ export function runCalculations(
     // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
 
+    // Geometry and load are all the recommendation pass below needs: the
+    // current a cable carries depends only on the downstream devices, not on
+    // its cross-section, so hypothetical sizes can be evaluated cheaply.
+    edgeLoads.set(edgeId, { length, current, requiredCrossSection });
+
     edgeDataMap.set(edgeId, {
       current,
       allowedVoltageDropV: edgeAllowedDropV,
@@ -314,6 +358,209 @@ export function runCalculations(
 
     const parentImpedance = cumulativeImpedance.get(parentId) || 0;
     cumulativeImpedance.set(nodeId, parentImpedance + loopImpedance);
+  }
+
+  // --- Recommended cross-sections ---------------------------------------
+  // requiredCrossSection alone only answers "is this one segment's own drop
+  // acceptable", which sizes a short trunk cable far too small even when it
+  // carries the whole network's current. The recommendation therefore also
+  // applies: a thermal current-density floor, lépcsőzetesség (a cable is never
+  // thinner than any cable it feeds), and the cumulative drop limit along each
+  // path.
+  const maxCurrentDensity =
+    sourceData.maxCurrentDensity ?? DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2;
+
+  const recommended = new Map<string, number>();
+  for (const [edgeId, load] of edgeLoads) {
+    const fromDrop =
+      load.requiredCrossSection > 0
+        ? nextStandardCrossSection(load.requiredCrossSection)
+        : SMALLEST_CROSS_SECTION;
+    const fromThermal = calculateThermalMinCrossSection(
+      load.current,
+      maxCurrentDensity,
+    );
+    recommended.set(
+      edgeId,
+      fromThermal > 0
+        ? Math.max(fromDrop, nextStandardCrossSection(fromThermal))
+        : fromDrop,
+    );
+  }
+
+  /** Raise every cable to at least the largest cable it feeds. */
+  function applyGrading() {
+    // postOrder settles children before their parent.
+    for (const nodeId of postOrder) {
+      const edgeId = edgeToChild.get(nodeId);
+      if (!edgeId) continue;
+      let maxChild = 0;
+      for (const childId of children.get(nodeId) || []) {
+        const childEdgeId = edgeToChild.get(childId);
+        if (!childEdgeId) continue;
+        maxChild = Math.max(maxChild, recommended.get(childEdgeId) ?? 0);
+      }
+      if (maxChild > (recommended.get(edgeId) ?? 0)) {
+        recommended.set(edgeId, maxChild);
+      }
+    }
+  }
+
+  /** Cumulative drop [%] per node if every cable used its recommended size. */
+  const sourceId = sourceNode.id;
+  function recommendedCumulativeDrops(): Map<string, number> {
+    const cum = new Map<string, number>([[sourceId, 0]]);
+    for (const nodeId of preOrder) {
+      if (nodeId === sourceId) continue;
+      const parentId = parent.get(nodeId)!;
+      const edgeId = edgeToChild.get(nodeId)!;
+      const load = edgeLoads.get(edgeId);
+      const dropPercent = load
+        ? calculateVoltageDropPercent(
+            calculateVoltageDropV(
+              load.length,
+              recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+              load.current,
+              phaseMode,
+            ),
+            systemVoltage,
+            phaseMode,
+          )
+        : 0;
+      cum.set(nodeId, (cum.get(parentId) ?? 0) + dropPercent);
+    }
+    return cum;
+  }
+
+  applyGrading();
+
+  // The per-cable requirement cannot satisfy the cumulative limit on its own:
+  // é is defined so that a cable sitting exactly at its required cross-section
+  // already spends 75 % of the whole allowed drop, so any path of two or more
+  // cables busts the limit. Voltage drop is inversely proportional to area, so
+  // a path that comes out N times over budget needs every cable on it widened
+  // N times over. Sharing that factor across the whole path keeps the taper the
+  // per-cable requirements established, rather than dumping the entire
+  // correction onto one cable. A cable on several offending paths takes the
+  // largest factor asked of it. Rounding up to standard sizes overshoots
+  // slightly, so this repeats until it settles.
+  for (let pass = 0; pass < MAX_RECOMMENDATION_PASSES; pass++) {
+    const cum = recommendedCumulativeDrops();
+    const target = new Map<string, number>();
+
+    for (const node of nodes) {
+      if (node.type !== "cabinet") continue;
+      const drop = cum.get(node.id) ?? 0;
+      if (drop <= allowedDropPercent) continue;
+
+      const factor = drop / allowedDropPercent;
+      for (
+        let cur: string | null | undefined = node.id;
+        cur;
+        cur = parent.get(cur)
+      ) {
+        const edgeId = edgeToChild.get(cur);
+        if (!edgeId || !edgeLoads.has(edgeId)) continue;
+        const widened = (recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION) * factor;
+        target.set(edgeId, Math.max(target.get(edgeId) ?? 0, widened));
+      }
+    }
+
+    if (target.size === 0) break; // every path is within the limit
+
+    let changed = false;
+    for (const [edgeId, wanted] of target) {
+      const size = nextStandardCrossSection(wanted);
+      if (size > (recommended.get(edgeId) ?? 0)) {
+        recommended.set(edgeId, size);
+        changed = true;
+      }
+    }
+
+    // Nothing grew, so the largest standard size is not enough for this path.
+    if (!changed) break;
+    applyGrading();
+  }
+
+  // What each cable actually needs, in context.
+  //
+  // requiredCrossSection answers that for one cable in isolation, which is
+  // misleading on its own: it hands the whole allowed drop to every cable, so
+  // it reads far too optimistic for a cable deep in the network. The
+  // network-wide voltage-drop half of the question is how thin this one cable
+  // could be, with every other cable at its recommended size, before some
+  // cabinet downstream of it goes over the limit; whichever path leaves it the
+  // least room decides. The thermal half is I / maxCurrentDensity: a short
+  // trunk carrying the whole network has almost no voltage drop of its own, but
+  // still cannot be thinner than that floor.
+  //
+  // The reported figure is the largest of the three, which is what the
+  // recommendation rounds up from (grading can still push the recommendation
+  // higher still).
+  const dropAtRecommended = new Map<string, number>();
+  for (const [edgeId, load] of edgeLoads) {
+    dropAtRecommended.set(
+      edgeId,
+      calculateVoltageDropPercent(
+        calculateVoltageDropV(
+          load.length,
+          recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+          load.current,
+          phaseMode,
+        ),
+        systemVoltage,
+        phaseMode,
+      ),
+    );
+  }
+
+  const remainingBudget = new Map<string, number>();
+  for (const node of nodes) {
+    if (node.type !== "cabinet") continue;
+
+    const pathEdges: string[] = [];
+    for (
+      let cur: string | null | undefined = node.id;
+      cur;
+      cur = parent.get(cur)
+    ) {
+      const edgeId = edgeToChild.get(cur);
+      if (edgeId && edgeLoads.has(edgeId)) pathEdges.push(edgeId);
+    }
+
+    const pathDrop = pathEdges.reduce(
+      (sum, edgeId) => sum + (dropAtRecommended.get(edgeId) ?? 0),
+      0,
+    );
+    for (const edgeId of pathEdges) {
+      const budget =
+        allowedDropPercent - (pathDrop - (dropAtRecommended.get(edgeId) ?? 0));
+      const tightest = remainingBudget.get(edgeId);
+      if (tightest === undefined || budget < tightest) {
+        remainingBudget.set(edgeId, budget);
+      }
+    }
+  }
+
+  for (const [edgeId, size] of recommended) {
+    const updates = edgeDataMap.get(edgeId);
+    if (!updates) continue;
+    updates.recommendedCrossSection = size;
+
+    const load = edgeLoads.get(edgeId);
+    // Drop is inversely proportional to area, so the area that exactly fills
+    // the remaining budget scales off the recommended size's own drop.
+    const budget = remainingBudget.get(edgeId);
+    const drop = dropAtRecommended.get(edgeId) ?? 0;
+    const inNetwork =
+      budget !== undefined && budget > 0 && drop > 0 ? (size * drop) / budget : 0;
+
+    const binding = Math.max(
+      load?.requiredCrossSection ?? 0,
+      inNetwork,
+      calculateThermalMinCrossSection(load?.current ?? 0, maxCurrentDensity),
+    );
+    if (binding > 0) updates.networkRequiredCrossSection = binding;
   }
 
   const updatedEdges = edges.map((edge) => {

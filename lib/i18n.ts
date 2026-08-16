@@ -101,6 +101,9 @@ const hu = {
     "A kábelek árama a mögöttes berendezések összárama × szorzó / fázisok száma. Kikapcsolva a beírt áramok változatlanul összegződnek.",
   "asz.designCurrentSafetyFactor": "Mértékadó áram szorzója",
   "asz.designCurrentSafetyFactorHint": "Alapértelmezett: 1,2.",
+  "asz.maxCurrentDensity": "Max. áramsűrűség [A/mm²]",
+  "asz.maxCurrentDensityHint":
+    "Hőterhelési alsó határ a keresztmetszet-ajánláshoz. Alapértelmezett: 2. 0 = kikapcsolva.",
 
   // Node titles
   "node.fm": "Főmérő (FM)",
@@ -140,6 +143,8 @@ const hu = {
   "canvas.iz": "Iz",
   "canvas.allowedDropV": "Megeng. fesz.esés",
   "canvas.minCrossSection": "Min. keresztm.",
+  "canvas.calculatedCrossSection": "Számított keresztm.",
+  "canvas.recommendedCrossSection": "Ajánlott keresztm.",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",
@@ -249,6 +254,9 @@ const en: Record<TranslationKey, string> = {
     "Cable currents become the downstream device total × safety factor / number of phases. When off, entered currents are summed as-is.",
   "asz.designCurrentSafetyFactor": "Design current safety factor",
   "asz.designCurrentSafetyFactorHint": "Default: 1.2.",
+  "asz.maxCurrentDensity": "Max. current density [A/mm²]",
+  "asz.maxCurrentDensityHint":
+    "Thermal floor for cross-section recommendations. Default: 2. Set to 0 to disable.",
 
   // Node titles
   "node.fm": "Main Meter (MM)",
@@ -287,6 +295,8 @@ const en: Record<TranslationKey, string> = {
   "canvas.iz": "Iz",
   "canvas.allowedDropV": "Allowed drop",
   "canvas.minCrossSection": "Min. cross-sec.",
+  "canvas.calculatedCrossSection": "Calculated cross-sec.",
+  "canvas.recommendedCrossSection": "Recommended cross-sec.",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",

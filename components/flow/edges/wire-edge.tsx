@@ -1,12 +1,17 @@
 "use client";
 
 import { EdgeProps, EdgeLabelRenderer } from "@xyflow/react";
-import type { CableEdgeData, CablePdfFieldKey } from "@/types/electrical";
-import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
+import type { CableEdgeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
-import { getNodeLabelSides } from "@/lib/cabinet-label-placement";
+import { getCableLabelLines } from "@/lib/cable-label";
+import {
+  computeCableLabelPlacements,
+  CABLE_LABEL_GAP_X,
+  CABLE_LABEL_GAP_Y,
+} from "@/lib/cable-label-placement";
+import { useSettingsStore } from "@/store/settings-store";
 import { useT } from "@/lib/i18n";
-import { cn, formatCalc } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
 const STROKE_WIDTH = 1;
@@ -170,7 +175,6 @@ export function WireEdge({
   targetX,
   targetY,
   source,
-  target,
   sourceHandleId,
   targetHandleId,
   data,
@@ -184,31 +188,17 @@ export function WireEdge({
   const edges = useFlowStore((s) => s.edges);
   const isSelected = selected || selectedEdgeId === id;
 
-  // Sides the two endpoint nodes' own labels occupy, so the cable's info box
-  // can pick the free perpendicular side instead of landing on top of them.
-  const endpointLabelSides = useMemo(() => {
-    const sides = new Set<string>();
-    const sourceNode = nodes.find((n) => n.id === source);
-    const targetNode = nodes.find((n) => n.id === target);
-    if (sourceNode) {
-      for (const s of getNodeLabelSides(sourceNode, edges, nodes)) sides.add(s);
-    }
-    if (targetNode) {
-      for (const s of getNodeLabelSides(targetNode, edges, nodes)) sides.add(s);
-    }
-    return sides;
-  }, [nodes, edges, source, target]);
+  const language = useSettingsStore((s) => s.language);
+  const labelLines = getCableLabelLines(cableData, t);
 
-  // A line is shown (on the canvas and in the PDF alike) when its checkbox is
-  // ticked, falling back to the per-field default when untouched.
-  const pdfFields = cableData?.pdfFields;
-  const showField = (key: CablePdfFieldKey) =>
-    pdfFields?.[key] ?? CABLE_PDF_FIELD_DEFAULTS[key];
+  // Placement is solved for the whole diagram at once so the boxes can be kept
+  // apart; this edge just reads its own slot out of the shared result.
+  const placement = useMemo(
+    () => computeCableLabelPlacements(nodes, edges, language).get(id),
+    [nodes, edges, language, id],
+  );
 
-  const hasInfoLabel =
-    cableData &&
-    cableData.length > 0 &&
-    (Object.keys(CABLE_PDF_FIELD_DEFAULTS) as CablePdfFieldKey[]).some((k) => showField(k));
+  const hasInfoLabel = labelLines.length > 0;
   const strokeColor = isSelected ? "#2563eb" : "#000";
   
   // Determine cable style based on source node type
@@ -242,23 +232,25 @@ export function WireEdge({
     setSelectedEdgeId(id);
   };
 
-  // Calculate label position (middle of path)
+  // Apply the solved placement to the real routed path.
   const totalLength = getPathLength(pathPoints);
-  const labelPos = getPointAtDistance(pathPoints, totalLength / 2);
+  const anchor = getPointAtDistance(
+    pathPoints,
+    totalLength * (placement?.t ?? 0.5),
+  ).point;
 
-  // Cabinet/trunk text labels sit on a wire-avoiding side of their node. Put
-  // the cable's own info box on the free perpendicular side (beside vertical
-  // segments, above/below horizontal ones) so it never lands on top of an
-  // endpoint's own label, especially on the short trunk hops.
-  const midAngleDeg = Math.abs(labelPos.angle * (180 / Math.PI));
-  const midIsVertical = midAngleDeg > 45 && midAngleDeg < 135;
-  const infoTransform = midIsVertical
-    ? endpointLabelSides.has("right") && !endpointLabelSides.has("left")
-      ? `translate(-100%, -50%) translate(${labelPos.point.x - 10}px, ${labelPos.point.y}px)`
-      : `translate(0, -50%) translate(${labelPos.point.x + 10}px, ${labelPos.point.y}px)`
-    : endpointLabelSides.has("top") && !endpointLabelSides.has("bottom")
-      ? `translate(-50%, 0%) translate(${labelPos.point.x}px, ${labelPos.point.y + 8}px)`
-      : `translate(-50%, -100%) translate(${labelPos.point.x}px, ${labelPos.point.y - 8}px)`;
+  const infoTransform = (() => {
+    switch (placement?.side) {
+      case "left":
+        return `translate(-100%, -50%) translate(${anchor.x - CABLE_LABEL_GAP_X}px, ${anchor.y}px)`;
+      case "right":
+        return `translate(0, -50%) translate(${anchor.x + CABLE_LABEL_GAP_X}px, ${anchor.y}px)`;
+      case "bottom":
+        return `translate(-50%, 0%) translate(${anchor.x}px, ${anchor.y + CABLE_LABEL_GAP_Y}px)`;
+      default:
+        return `translate(-50%, -100%) translate(${anchor.x}px, ${anchor.y - CABLE_LABEL_GAP_Y}px)`;
+    }
+  })();
 
   return (
     <>
@@ -363,33 +355,11 @@ export function WireEdge({
               transform: infoTransform,
             }}
           >
-            {showField("name") && cableData.name && (
-              <div className="font-semibold">{cableData.name}</div>
-            )}
-            {showField("dimensions") && (
-              <div className="font-medium">{cableData.length} m • {cableData.crossSection} mm²</div>
-            )}
-            {showField("current") && cableData.current !== undefined && cableData.current > 0 && (
-              <div className="font-medium text-blue-600">{t("canvas.current")}: {formatCalc(cableData.current)} A</div>
-            )}
-            {showField("allowedVoltageDropV") && cableData.allowedVoltageDropV !== undefined && cableData.allowedVoltageDropV > 0 && (
-              <div className="font-medium text-blue-600">{t("canvas.allowedDropV")}: {formatCalc(cableData.allowedVoltageDropV)} V</div>
-            )}
-            {showField("requiredCrossSection") && cableData.requiredCrossSection !== undefined && cableData.requiredCrossSection > 0 && (
-              <div className="font-medium text-blue-600">{t("canvas.minCrossSection")}: {formatCalc(cableData.requiredCrossSection)} mm²</div>
-            )}
-            {showField("voltageDropV") && cableData.voltageDropV !== undefined && cableData.voltageDropV > 0 && (
-              <div className="font-medium text-blue-600">{t("calc.voltageDrop")}: {formatCalc(cableData.voltageDropV)} V</div>
-            )}
-            {showField("voltageDropPercent") && cableData.voltageDropPercent !== undefined && cableData.voltageDropPercent > 0 && (
-              <div className="font-medium text-blue-600">{t("calc.voltageDrop")}: {formatCalc(cableData.voltageDropPercent)} %</div>
-            )}
-            {showField("impedance") && cableData.impedance !== undefined && cableData.impedance > 0 && (
-              <div className="font-medium text-blue-600">{t("calc.loopImpedance")}: {formatCalc(cableData.impedance)} Ω</div>
-            )}
-            {showField("shortCircuit") && cableData.shortCircuitCurrent !== undefined && cableData.shortCircuitCurrent > 0 && (
-              <div className="font-medium text-blue-600">{t("canvas.iz")}: {formatCalc(cableData.shortCircuitCurrent)} A</div>
-            )}
+            {labelLines.map((line) => (
+              <div key={line.key} className={line.className}>
+                {line.text}
+              </div>
+            ))}
           </div>
         </EdgeLabelRenderer>
       )}

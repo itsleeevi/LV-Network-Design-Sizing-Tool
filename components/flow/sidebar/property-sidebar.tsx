@@ -24,6 +24,7 @@ import {
   COMMON_DEVICES,
   ALUMINIUM_CABLE,
   DESIGN_CURRENT_SAFETY_FACTOR,
+  DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2,
 } from "@/types/electrical";
 import {
   getDownstreamChildLabels,
@@ -405,6 +406,28 @@ function AszProperties({
             })
           }
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="maxCurrentDensity">{t("asz.maxCurrentDensity")}</Label>
+        <Input
+          id="maxCurrentDensity"
+          type="number"
+          min={0}
+          step={0.1}
+          value={
+            data.maxCurrentDensity ?? DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2
+          }
+          onChange={(e) => {
+            const raw = e.target.value;
+            updateNodeData(nodeId, {
+              maxCurrentDensity: raw === "" ? undefined : parseFloat(raw),
+            });
+          }}
+        />
+        <p className="text-xs text-muted-foreground">
+          {t("asz.maxCurrentDensityHint")}
+        </p>
       </div>
 
       <div className="space-y-1">

@@ -74,10 +74,25 @@ export type AszNodeData = {
    * factor) when unset, but is editable per project.
    */
   designCurrentSafetyFactor?: number;
+  /**
+   * Thermal sizing floor [A/mm²]: every cable's recommended (and számított)
+   * cross-section is at least I / maxCurrentDensity. Defaults to
+   * DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2. Set to 0 to disable. This is a
+   * simple current-density rule, not a full ampacity table (installation /
+   * soil / grouping are not modelled).
+   */
+  maxCurrentDensity?: number;
 };
 
 /** Safety factor applied to raw device totals in design-current mode. */
 export const DESIGN_CURRENT_SAFETY_FACTOR = 1.2;
+
+/**
+ * Default thermal current-density floor [A/mm²] for aluminium UHK cables.
+ * Not a verified ampacity rating; a tunable rule of thumb so a short trunk
+ * carrying the whole network cannot grade down to a branch-sized section.
+ */
+export const DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2 = 2;
 
 /** FM (Főmérő - Main Meter) node data */
 export type FmNodeData = {
@@ -130,8 +145,25 @@ export type CableEdgeData = {
   current?: number;
   /** Allowed reference voltage drop é [V] used to size the min cross-section */
   allowedVoltageDropV?: number;
-  /** Required minimum cross-section [mm²] */
+  /**
+   * Required minimum cross-section [mm²] from this cable's own voltage drop
+   * alone (Excel per-cable column). Continuous, not a standard size.
+   */
   requiredCrossSection?: number;
+  /**
+   * Required minimum cross-section [mm²] with the rest of the network and the
+   * thermal current-density floor accounted for: the largest of
+   * `requiredCrossSection`, the thinnest this cable could be (others at their
+   * recommended sizes) before a cabinet downstream exceeds the allowed
+   * cumulative drop, and I / ÁSZ maxCurrentDensity when that density is on.
+   * Continuous, not a standard size. This is the figure the recommendation
+   * rounds up from, so it can still sit below `recommendedCrossSection` when
+   * grading is what drives that instead. Undefined when the cable carries no
+   * load.
+   */
+  networkRequiredCrossSection?: number;
+  /** Standard cross-section [mm²] to install; the recommendation. */
+  recommendedCrossSection?: number;
   /** Cable resistance [Ω] */
   resistance?: number;
   /** Cable reactance [Ω] */
@@ -219,6 +251,7 @@ export const DEFAULT_ASZ_DATA: AszNodeData = {
   allowedVoltageDrop: 4,
   phaseMode: "3F",
   useDesignCurrent: false,
+  maxCurrentDensity: DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2,
 };
 
 export const DEFAULT_FM_DATA: FmNodeData = {

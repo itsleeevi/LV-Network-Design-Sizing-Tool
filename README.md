@@ -34,7 +34,7 @@ The LV Network Design & Sizing Tool lets users build a low-voltage (0.4 kV) unde
 
 Users can add a utility supply, a main meter, a main distributor, and roadside distribution cabinets, connect them with cables, assign device loads, and calculate:
 
-- Required cable cross-section
+- Required cable cross-section, plus a recommended standard size graded across the whole network
 - Segment and cumulative voltage drop, in both volts and percent
 - Cumulative loop impedance and short-circuit current at every cabinet
 - Suggested maximum fuse rating ("Bizt") at every cabinet
@@ -52,6 +52,7 @@ Projects can be automatically arranged, saved locally or exported to a file, and
 - An optional "design current" mode that scales downstream loads by a configurable safety factor, mirroring how the reference spreadsheet sizes cables
 - Full-network automatic layout with uniform spacing and collision-aware label positioning for both node and cable labels
 - Cable sizing, voltage-drop, loop impedance, short-circuit current, and maximum fuse rating calculations
+- A recommended standard cross-section per cable, graded across the network and shown on the diagram
 - Editable property panels for every network element and cable, including custom cable names/designations
 - Project autosave to localStorage, so a refresh never loses work
 - Import and export using a custom `.wire.json` project file format
@@ -95,6 +96,32 @@ The engine treats the network as a graph rooted at the utility supply (ÁSZ) nod
 3. It walks the tree in post-order, aggregating each cabinet's own device load with everything downstream of it, so every cable carries the total current of everything it feeds. If the supply node's "design current" option is enabled, downstream totals are scaled by an editable safety factor (device total x factor / number of phases, factor defaults to 1.2) instead of using the raw summed device current. Individual cables can also opt out of that scaling and keep carrying the raw total.
 4. It walks the tree again in pre-order, calculating each cable's sizing, voltage drop, and loop impedance from that current, and accumulating both voltage drop and loop impedance from the source outward, cable by cable, along the full path to each node (not just the last cable feeding it).
 5. Cabinet nodes are annotated with their own load, total downstream load, cumulative voltage drop (in volts and as a percentage), the cumulative loop impedance and short-circuit current for the full path back to the source, and the suggested maximum fuse rating at that point.
+6. Finally it recommends a standard cross-section for every cable (see below).
+
+### Recommended Cross-Sections
+
+Every calculation run also reports two cross-sections per cable, on the wire label:
+
+- **Számított keresztm. / Calculated cross-section**: the continuous need in mm² after network voltage drop and the thermal current-density floor.
+- **Ajánlott keresztm. / Recommended cross-section**: the standard size to actually install, green when the size currently set is adequate and amber when it is too small.
+
+The calculated figure is deliberately larger than the textbook per-cable formula `A = ρ L I / é` alone. That formula looks at one cable in isolation, and `é` is defined as `0.75 × U × ε / √3`, which means a cable sitting exactly at that figure already spends 75% of the entire allowed voltage drop by itself (3% out of a 4% budget). One cable can get away with that; a path of two or more cannot. A short trunk also has almost no voltage drop of its own however much current it carries, so a thermal floor is needed as well. The reported figure is therefore the largest of:
+
+- the per-cable formula above,
+- the thinnest this cable could be, with every other cable at its recommended size, before some cabinet downstream of it exceeds the allowed cumulative drop, and
+- `I / maxCurrentDensity` from the ÁSZ node's thermal density setting (default 2 A/mm²; set to 0 to disable).
+
+Getting from there to the recommendation adds:
+
+- **Thermal floor**: raise every cable to at least the next standard size above `I / maxCurrentDensity`, so a trunk feeding many short branches cannot grade down to a branch-sized section while carrying the sum of their currents. This is a single editable current-density number, not a full ampacity table (cable type, installation, soil and grouping are not modelled).
+- **Lépcsőzetesség (grading)**: a cable is never thinner than any cable it feeds, so cross-sections taper away from the source and never step up.
+- **Cumulative voltage drop**: since drop is inversely proportional to area, **a path that comes out N times over budget has every cable on it widened N times over**, then each is rounded up to the next standard size. Spreading the correction across the whole path preserves the taper, instead of dumping it all onto one cable. A cable carrying several over-budget paths takes the largest factor asked of it, and because rounding up to standard sizes overshoots slightly, this repeats until it settles.
+
+Because grading can still bind after the thermal floor, the recommendation is sometimes above what Számított alone would need. That remaining gap means the cable is being set by what it feeds rather than by its own drop or density.
+
+Because a cable's current depends only on the devices downstream of it and not on its own cross-section, these candidate sizes are evaluated without re-running the whole engine. The result does not depend on the cross-sections currently set, only on lengths, loads, the allowed drop, the density setting, and the topology.
+
+The recommendation is advice, not an automatic edit: cross-sections are only ever changed by editing a cable.
 
 ### Calculated Values
 
@@ -102,6 +129,7 @@ For each cable segment, the engine calculates:
 
 - Total carried current (optionally as a design current)
 - Required minimum conductor cross-section
+- Recommended standard cross-section (graded across the network)
 - Voltage drop in volts
 - Voltage drop as a percentage
 - Loop impedance
