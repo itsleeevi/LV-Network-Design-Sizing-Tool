@@ -2,11 +2,31 @@
 
 A browser-based engineering tool for designing and calculating low-voltage distribution networks using an interactive schematic canvas.
 
-[Live Demo](https://lv-network-design-sizing-tool.vercel.app/)
+[Live Demo](https://lv-network-design-sizing-tool.vercel.app/) (production, `main`)
 
 ![Network design demo](./docs/images/network-demo.gif)
 
 > Engineering prototype for demonstration purposes. Calculations should be independently verified before use in real-world electrical designs.
+
+## Deploy & Staging
+
+The app is hosted on [Vercel](https://vercel.com), linked to the GitHub repo.
+
+| Branch    | Environment | URL |
+| --------- | ----------- | --- |
+| `main`    | Production  | [lv-network-design-sizing-tool.vercel.app](https://lv-network-design-sizing-tool.vercel.app/) |
+| `staging` | Staging     | Preview URL for the `staging` branch (see below) |
+
+### Give `staging` a stable URL
+
+1. Push to `staging` (already exists on GitHub).
+2. Open the Vercel project → **Deployments** and confirm a Preview deployment ran for `staging`.
+3. Project → **Settings** → **Domains** → **Add**:
+   - Domain: `staging-lv-network-design-sizing-tool.vercel.app` (or your own subdomain)
+   - Assign it to the **`staging`** Git branch
+4. After that, every push to `staging` updates that URL; `main` stays production.
+
+Workflow: develop on a feature branch → merge to `staging` for review → merge `staging` into `main` for production.
 
 ## Overview
 
