@@ -1,7 +1,8 @@
 import type { CableEdgeData, CablePdfFieldKey } from "@/types/electrical";
 import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
 import type { TranslationKey } from "@/lib/i18n";
-import { formatCalc } from "@/lib/utils";
+import { formatCalc, formatLocaleNumber, formatStandardSize } from "@/lib/utils";
+import type { Language } from "@/store/settings-store";
 
 export type Translate = (key: TranslationKey) => string;
 
@@ -25,6 +26,7 @@ export type CableLabelLine = {
 export function getCableLabelLines(
   data: CableEdgeData | undefined,
   t: Translate,
+  language: Language,
 ): CableLabelLine[] {
   if (!data || !(data.length > 0)) return [];
 
@@ -41,27 +43,27 @@ export function getCableLabelLines(
   if (show("dimensions")) {
     lines.push({
       key: "dimensions",
-      text: `${data.length} m • ${data.crossSection} mm²`,
+      text: `${data.length} m • ${t("cable.installedCrossSection")}: ${formatStandardSize(data.crossSection, language)} mm²`,
       className: "font-medium",
     });
   }
 
-  // Always shown, as a named pair: what this cable needs with the rest of the
-  // network accounted for, and the standard size that covers it. The
-  // recommendation is colour-coded so an undersized cable stands out.
+  // Always shown, as a named pair: what this cable needs and the standard
+  // size that covers it. The recommendation is colour-coded so an undersized
+  // cable stands out.
   const recommended = data.recommendedCrossSection;
   if (recommended != null && recommended > 0) {
     const needed = data.networkRequiredCrossSection;
     if (needed != null && needed > 0) {
       lines.push({
         key: "calculatedCrossSection",
-        text: `${t("canvas.calculatedCrossSection")}: ${formatCalc(needed)} mm²`,
+        text: `${t("canvas.calculatedCrossSection")}: ${formatLocaleNumber(needed, language, 2)} mm²`,
         className: "font-medium text-blue-600",
       });
     }
     lines.push({
       key: "recommendedCrossSection",
-      text: `${t("canvas.recommendedCrossSection")}: ${recommended} mm²`,
+      text: `${t("canvas.recommendedCrossSection")}: ${formatStandardSize(recommended, language)} mm²`,
       className:
         data.crossSection >= recommended
           ? "font-semibold text-green-600"
@@ -149,7 +151,7 @@ export function getCableLabelLines(
 
 /** Font metrics of the info box (text-[9px] leading-tight, px-1.5 py-1). */
 const LINE_HEIGHT = 11;
-const CHAR_WIDTH = 5.1;
+const CHAR_WIDTH = 5.4;
 const PADDING_X = 15;
 const PADDING_Y = 9;
 

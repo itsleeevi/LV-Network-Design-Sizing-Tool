@@ -189,7 +189,7 @@ export function WireEdge({
   const isSelected = selected || selectedEdgeId === id;
 
   const language = useSettingsStore((s) => s.language);
-  const labelLines = getCableLabelLines(cableData, t);
+  const labelLines = getCableLabelLines(cableData, t, language);
 
   // Placement is solved for the whole diagram at once so the boxes can be kept
   // apart; this edge just reads its own slot out of the shared result.

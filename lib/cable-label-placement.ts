@@ -23,15 +23,24 @@ type Rect = { x: number; y: number; w: number; h: number };
 type Size = { width: number; height: number };
 
 /** Positions tried along the cable, nearest the middle first. */
-const T_CANDIDATES = [0.5, 0.38, 0.62, 0.28, 0.72];
+const T_CANDIDATES = [0.5, 0.38, 0.62, 0.28, 0.72, 0.18, 0.82];
+
+/** Small buffer kept clear around every box so labels never touch. */
+const MARGIN = 3;
 
 /** Rough footprint of a node's own text label, kept clear of cable boxes. */
 const NODE_LABEL_W = 108;
 const NODE_LABEL_H = 74;
 
 function overlapArea(a: Rect, b: Rect): number {
-  const dx = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
-  const dy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+  // Inflated by MARGIN on both sides so boxes keep a visible gap rather than
+  // just barely not touching.
+  const ax = a.x - MARGIN;
+  const ay = a.y - MARGIN;
+  const aw = a.w + 2 * MARGIN;
+  const ah = a.h + 2 * MARGIN;
+  const dx = Math.min(ax + aw, b.x + b.w) - Math.max(ax, b.x);
+  const dy = Math.min(ay + ah, b.y + b.h) - Math.max(ay, b.y);
   return dx > 0 && dy > 0 ? dx * dy : 0;
 }
 
@@ -120,8 +129,10 @@ function solveCableLabelPlacements(
 ): Map<string, CableLabelPlacement> {
   const labelSize = (edge: Edge): Size =>
     estimateCableLabelSize(
-      getCableLabelLines(edge.data as CableEdgeData | undefined, (key) =>
-        translate(language, key),
+      getCableLabelLines(
+        edge.data as CableEdgeData | undefined,
+        (key) => translate(language, key),
+        language,
       ),
     );
 
@@ -163,11 +174,13 @@ function solveCableLabelPlacements(
       ...getNodeLabelSides(target, edges, nodes),
     ]);
 
-    // Beside a vertical cable, above/below a horizontal one; the side the
-    // endpoints' own labels do not already use comes first.
+    // Beside a vertical cable, above/below a horizontal one; the perpendicular
+    // sides are tried too as a fallback for crowded junctions where the
+    // preferred axis has no clear spot. The side the endpoints' own labels do
+    // not already use comes first within each pair.
     const sides: CableLabelSide[] = isVertical
-      ? ["right", "left"]
-      : ["bottom", "top"];
+      ? ["right", "left", "bottom", "top"]
+      : ["bottom", "top", "right", "left"];
     sides.sort(
       (s1, s2) =>
         Number(endpointLabelSides.has(s1)) - Number(endpointLabelSides.has(s2)),

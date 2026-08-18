@@ -102,8 +102,8 @@ The engine treats the network as a graph rooted at the utility supply (ÁSZ) nod
 
 Every calculation run also reports two cross-sections per cable, on the wire label:
 
-- **Számított keresztm. / Calculated cross-section**: the continuous need in mm² after network voltage drop and the thermal current-density floor.
-- **Ajánlott keresztm. / Recommended cross-section**: the standard size to actually install, green when the size currently set is adequate and amber when it is too small.
+- **Szükséges min. / Required min.**: the continuous need in mm² after network voltage drop and the thermal current-density floor.
+- **Javasolt / Recommended**: the standard size to actually install, green when the size currently set is adequate and amber when it is too small.
 
 The calculated figure is deliberately larger than the textbook per-cable formula `A = ρ L I / é` alone. That formula looks at one cable in isolation, and `é` is defined as `0.75 × U × ε / √3`, which means a cable sitting exactly at that figure already spends 75% of the entire allowed voltage drop by itself (3% out of a 4% budget). One cable can get away with that; a path of two or more cannot. A short trunk also has almost no voltage drop of its own however much current it carries, so a thermal floor is needed as well. The reported figure is therefore the largest of:
 
@@ -117,7 +117,7 @@ Getting from there to the recommendation adds:
 - **Lépcsőzetesség (grading)**: a cable is never thinner than any cable it feeds, so cross-sections taper away from the source and never step up.
 - **Cumulative voltage drop**: since drop is inversely proportional to area, **a path that comes out N times over budget has every cable on it widened N times over**, then each is rounded up to the next standard size. Spreading the correction across the whole path preserves the taper, instead of dumping it all onto one cable. A cable carrying several over-budget paths takes the largest factor asked of it, and because rounding up to standard sizes overshoots slightly, this repeats until it settles.
 
-Because grading can still bind after the thermal floor, the recommendation is sometimes above what Számított alone would need. That remaining gap means the cable is being set by what it feeds rather than by its own drop or density.
+Because grading can still bind after the thermal floor, the recommendation is sometimes above what "Szükséges min." alone would need. That remaining gap means the cable is being set by what it feeds rather than by its own drop or density.
 
 Because a cable's current depends only on the devices downstream of it and not on its own cross-section, these candidate sizes are evaluated without re-running the whole engine. The result does not depend on the cross-sections currently set, only on lengths, loads, the allowed drop, the density setting, and the topology.
 
@@ -135,7 +135,7 @@ For each cable segment, the engine calculates:
 - Loop impedance
 - Short-circuit current
 
-Cabinet nodes also display their own load, downstream load, cumulative voltage drop (volts and percent), the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating ("Bizt") derived from that short-circuit current.
+Cabinet nodes also display their own load, downstream load, the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating ("Bizt") derived from that short-circuit current. Cumulative voltage drop is shown as a single compact line, volts and percent together against the allowed limit, e.g. `Feszültségesés: 7,20 V • 1,80% / 4,00% ✓` (a warning mark and amber colour instead of the checkmark when the path is over the allowed limit). Numbers use a decimal comma in Hungarian and a decimal point in English.
 
 The engine supports both three-phase (3F, 400 V) and single-phase (1F, 230 V) systems, since the underlying formulas and conductor factors differ between the two.
 

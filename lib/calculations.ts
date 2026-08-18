@@ -555,12 +555,21 @@ export function runCalculations(
     const inNetwork =
       budget !== undefined && budget > 0 && drop > 0 ? (size * drop) / budget : 0;
 
-    const binding = Math.max(
-      load?.requiredCrossSection ?? 0,
-      inNetwork,
-      calculateThermalMinCrossSection(load?.current ?? 0, maxCurrentDensity),
+    const voltageDropRequirement = Math.max(load?.requiredCrossSection ?? 0, inNetwork);
+    const thermalRequirement = calculateThermalMinCrossSection(
+      load?.current ?? 0,
+      maxCurrentDensity,
     );
-    if (binding > 0) updates.networkRequiredCrossSection = binding;
+    const binding = Math.max(voltageDropRequirement, thermalRequirement);
+
+    if (binding > 0) {
+      updates.networkRequiredCrossSection = binding;
+      updates.networkRequiredCrossSectionReason =
+        thermalRequirement > voltageDropRequirement ? "current" : "voltageDrop";
+      // Whether lépcsőzetesség alone pushed the recommendation past what
+      // rounding the requirement up would already have given it.
+      updates.recommendedGradedUp = size > nextStandardCrossSection(binding);
+    }
   }
 
   const updatedEdges = edges.map((edge) => {
@@ -601,6 +610,7 @@ export function runCalculations(
         shortCircuitCurrent,
         cumulativeVoltageDrop: voltageDrop,
         cumulativeVoltageDropV: voltageDropV,
+        cumulativeVoltageDropLimit: allowedDropPercent,
         maxFuseRating,
       },
     };

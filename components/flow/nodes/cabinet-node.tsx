@@ -22,7 +22,8 @@ import {
   resolveDesignationTag,
 } from "@/lib/downstream";
 import { useT, useSideLabel, useElementName } from "@/lib/i18n";
-import { cn, formatCalc } from "@/lib/utils";
+import { useSettingsStore } from "@/store/settings-store";
+import { cn, formatCalc, formatLocaleNumber } from "@/lib/utils";
 
 function SideHandle({
   position,
@@ -105,6 +106,7 @@ function CabinetInfo({
 }) {
   const t = useT();
   const sideLabel = useSideLabel();
+  const language = useSettingsStore((s) => s.language);
   const align =
     placement === "left"
       ? "text-right"
@@ -122,19 +124,17 @@ function CabinetInfo({
       )}
     >
       {/* Main label - clickable for rename */}
-      <button
-        type="button"
-        onClick={onStartEdit}
-        onPointerDown={(e) => e.stopPropagation()}
-        className={cn(
-          "pointer-events-auto nodrag nopan block w-full rounded px-0.5 text-sm font-medium leading-snug",
-          "cursor-text hover:bg-red-50",
-          align,
-        )}
-        title={t("cabinet.renameTitle")}
-      >
-        {displayLabel}
-      </button>
+      <div className={align}>
+        <button
+          type="button"
+          onClick={onStartEdit}
+          onPointerDown={(e) => e.stopPropagation()}
+          className="pointer-events-auto nodrag nopan inline rounded px-0.5 text-sm font-medium leading-snug cursor-text hover:bg-red-50"
+          title={t("cabinet.renameTitle")}
+        >
+          {displayLabel}
+        </button>
+      </div>
 
       {/* Chainage / position marker (shown exactly as entered) */}
       {data.kmMarker && <div>{data.kmMarker}</div>}
@@ -163,17 +163,22 @@ function CabinetInfo({
 
       {/* Calculated values (matches Excel summary table T-AD rows 4-7) */}
       {data.cumulativeVoltageDropV !== undefined &&
-        data.cumulativeVoltageDropV > 0 && (
-          <div className="font-medium text-blue-600">
-            {t("calc.voltageDrop")}: {formatCalc(data.cumulativeVoltageDropV)} V
-          </div>
-        )}
-      {data.cumulativeVoltageDrop !== undefined &&
-        data.cumulativeVoltageDrop > 0 && (
-          <div className="font-medium text-blue-600">
-            {t("calc.voltageDrop")}: {formatCalc(data.cumulativeVoltageDrop)} %
-          </div>
-        )}
+        data.cumulativeVoltageDropV > 0 &&
+        (() => {
+          const percent = data.cumulativeVoltageDrop ?? 0;
+          return (
+            <div className="font-medium text-blue-600">
+              {t("calc.voltageDrop")}:{" "}
+              {formatLocaleNumber(data.cumulativeVoltageDropV, language, 2)} V
+              {percent > 0 && (
+                <>
+                  {" • "}
+                  {formatLocaleNumber(percent, language, 2)}%
+                </>
+              )}
+            </div>
+          );
+        })()}
       {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
         <div className="font-medium text-blue-600">
           {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance)} Ω

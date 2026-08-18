@@ -29,6 +29,8 @@ export type CabinetNodeData = {
   cumulativeVoltageDrop?: number;
   /** Cumulative voltage drop to this point [V] */
   cumulativeVoltageDropV?: number;
+  /** Allowed cumulative voltage drop [%] (the ÁSZ node's global ε), for display alongside cumulativeVoltageDrop. */
+  cumulativeVoltageDropLimit?: number;
   /**
    * Suggested maximum fuse rating at this point [A] (Excel summary block
    * "Bizt" row: shortCircuitCurrent / FUSE_CURRENT_DIVISOR). A larger fuse
@@ -115,6 +117,13 @@ export type FeedNodeData = {
   label?: string;
 };
 
+/**
+ * What determined a cable's `networkRequiredCrossSection`: the thermal
+ * current-density floor ("áram"), or its own or the network's voltage drop
+ * ("feszültségesés").
+ */
+export type CrossSectionReason = "current" | "voltageDrop";
+
 /** Cable properties for edges (aluminium only, per UHK Excel) */
 export type CableEdgeData = {
   /** Cable identifier/name, e.g. "K1-1" (the Excel "Megnevezés" / D column) */
@@ -162,8 +171,20 @@ export type CableEdgeData = {
    * load.
    */
   networkRequiredCrossSection?: number;
+  /**
+   * Which requirement was largest (and so determined `networkRequiredCrossSection`):
+   * the thermal current-density floor, or either voltage-drop term. Shown in
+   * brackets next to the figure on the wire label.
+   */
+  networkRequiredCrossSectionReason?: CrossSectionReason;
   /** Standard cross-section [mm²] to install; the recommendation. */
   recommendedCrossSection?: number;
+  /**
+   * True when lépcsőzetesség (grading, being fed at least as large as the
+   * largest cable it feeds) is the sole reason `recommendedCrossSection` sits
+   * above `nextStandardCrossSection(networkRequiredCrossSection)`.
+   */
+  recommendedGradedUp?: boolean;
   /** Cable resistance [Ω] */
   resistance?: number;
   /** Cable reactance [Ω] */

@@ -83,7 +83,7 @@ const hu = {
   "calc.title": "Számított értékek",
   "calc.current": "Áram [A]",
   "calc.totalCurrent": "Áram összesen [A]",
-  "calc.voltageDrop": "Fesz esés",
+  "calc.voltageDrop": "Fesz. esés",
   "calc.loopImpedance": "Hurok IMP",
   "calc.iz": "Iz [A]",
   "calc.maxFuse": "Bizt [A]",
@@ -143,8 +143,12 @@ const hu = {
   "canvas.iz": "Iz",
   "canvas.allowedDropV": "Megeng. fesz.esés",
   "canvas.minCrossSection": "Min. keresztm.",
-  "canvas.calculatedCrossSection": "Számított keresztm.",
-  "canvas.recommendedCrossSection": "Ajánlott keresztm.",
+  "canvas.calculatedCrossSection": "Szükséges min.",
+  "canvas.recommendedCrossSection": "Javasolt",
+  "cable.installedCrossSection": "Beállított",
+  "reason.current": "áram alapján",
+  "reason.voltageDrop": "feszültségesés alapján",
+  "reason.grading": "lépcsőzetesség miatt",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",
@@ -295,8 +299,12 @@ const en: Record<TranslationKey, string> = {
   "canvas.iz": "Iz",
   "canvas.allowedDropV": "Allowed drop",
   "canvas.minCrossSection": "Min. cross-sec.",
-  "canvas.calculatedCrossSection": "Calculated cross-sec.",
-  "canvas.recommendedCrossSection": "Recommended cross-sec.",
+  "canvas.calculatedCrossSection": "Required min.",
+  "canvas.recommendedCrossSection": "Recommended",
+  "cable.installedCrossSection": "Set",
+  "reason.current": "based on current",
+  "reason.voltageDrop": "based on voltage drop",
+  "reason.grading": "due to grading",
 
   // Cable markings (drawing)
   "cable.kv04": "0.4kV",
