@@ -414,6 +414,26 @@ function main() {
   approx(esz3.cumulativeVoltageDrop, 1.1888797, "cumulative ΔU [%]");
   approx(esz3.cumulativeVoltageDropV, 4.7555187, "cumulative ΔU [V]");
 
+  // Parallel runs (n×A): same segment as K4 but 2×25 mm² must halve ΔU and Rh.
+  console.log("\n=== Parallel cables (2×25 vs K4's 1×25) ===");
+  {
+    const { nodes: pNodes, edges: pEdges } = buildGraph();
+    const k4Edge = pEdges.find((e) => e.id === "K4")!;
+    k4Edge.data = { ...(k4Edge.data as CableEdgeData), parallelCount: 2 };
+    const parallel = runCalculations(pNodes, pEdges);
+    const k4x2 = parallel.edges.find((e) => e.id === "K4")!
+      .data as CableEdgeData;
+    approx(k4x2.voltageDropV, 1.5455436 / 2, "2× voltage drop [V]");
+    approx(k4x2.voltageDropPercent, 0.3863859 / 2, "2× voltage drop [%]");
+    approx(k4x2.impedance, 0.29744 / 2, "2× loop impedance Rh [Ω]");
+    // Per-run required size is half of the single-cable Excel A_min.
+    approx(
+      k4x2.requiredCrossSection,
+      3.2198825 / 2,
+      "2× required cross-section per run [mm²]",
+    );
+  }
+
   verifyRackGraph();
 
   console.log("\n" + "=".repeat(60));

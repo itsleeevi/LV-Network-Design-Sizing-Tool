@@ -21,6 +21,7 @@ import {
   AszNodeData,
   Device,
   CABLE_CROSS_SECTIONS,
+  CABLE_PARALLEL_COUNTS,
   COMMON_DEVICES,
   ALUMINIUM_CABLE,
   DESIGN_CURRENT_SAFETY_FACTOR,
@@ -677,25 +678,50 @@ function CableProperties({
 
       <div className="space-y-2">
         <Label htmlFor="crossSection">{t("cable.crossSection")}</Label>
-        <Select
-          value={String(data.crossSection)}
-          onValueChange={(v) =>
-            updateEdgeData(edgeId, { crossSection: parseFloat(v) })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CABLE_CROSS_SECTIONS.map((cs) => (
-              <SelectItem key={cs} value={String(cs)}>
-                {cs} mm²
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          <Select
+            value={String(data.crossSection)}
+            onValueChange={(v) =>
+              updateEdgeData(edgeId, { crossSection: parseFloat(v) })
+            }
+          >
+            <SelectTrigger id="crossSection" className="flex-1">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CABLE_CROSS_SECTIONS.map((cs) => (
+                <SelectItem key={cs} value={String(cs)}>
+                  {cs} mm²
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="shrink-0 text-sm text-muted-foreground" aria-hidden>
+            ×
+          </span>
+          <Select
+            value={String(data.parallelCount ?? 1)}
+            onValueChange={(v) =>
+              updateEdgeData(edgeId, { parallelCount: parseInt(v, 10) })
+            }
+          >
+            <SelectTrigger
+              id="parallelCount"
+              className="w-16"
+              aria-label={t("cable.parallelCount")}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {CABLE_PARALLEL_COUNTS.map((n) => (
+                <SelectItem key={n} value={String(n)}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
-
       {/* Calculated values display - matching Excel columns exactly */}
       {(data.current !== undefined ||
         data.requiredCrossSection !== undefined ||

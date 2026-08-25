@@ -130,8 +130,14 @@ export type CableEdgeData = {
   name?: string;
   /** Cable length [m] */
   length: number;
-  /** Chosen cross-section [mm²] */
+  /** Chosen cross-section [mm²] of each parallel run */
   crossSection: number;
+  /**
+   * Number of identical cables run in parallel on this segment (1 = single
+   * cable). Effective area is crossSection × parallelCount, so voltage drop
+   * and loop impedance scale as 1/n. Defaults to 1 when unset.
+   */
+  parallelCount?: number;
   /**
    * Allowed voltage drop ε [%] for sizing THIS cable's minimum cross-section.
    * When undefined, the global value from the ÁSZ node is used.
@@ -292,4 +298,8 @@ export const DEFAULT_FE_DATA: FeNodeData = {
 export const DEFAULT_CABLE_DATA: CableEdgeData = {
   length: 0,
   crossSection: 25,
+  parallelCount: 1,
 };
+
+/** Allowed parallel-cable multipliers shown in the property editor. */
+export const CABLE_PARALLEL_COUNTS = [1, 2, 3, 4, 5, 6] as const;

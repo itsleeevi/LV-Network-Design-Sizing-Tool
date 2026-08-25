@@ -41,9 +41,12 @@ export function getCableLabelLines(
   }
 
   if (show("dimensions")) {
+    const parallels = data.parallelCount != null && data.parallelCount > 1
+      ? `${data.parallelCount} × `
+      : "";
     lines.push({
       key: "dimensions",
-      text: `${data.length} m • ${t("cable.installedCrossSection")}: ${formatStandardSize(data.crossSection, language)} mm²`,
+      text: `${data.length} m • ${t("cable.installedCrossSection")}: ${parallels}${formatStandardSize(data.crossSection, language)} mm²`,
       className: "font-medium",
     });
   }

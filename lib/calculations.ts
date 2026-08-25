@@ -45,6 +45,25 @@ export function calculateThermalMinCrossSection(
   return current / maxCurrentDensityAPerMm2;
 }
 
+/**
+ * How many identical cables share this segment. Missing / invalid values mean
+ * a single cable (matches saved projects that predate the field).
+ */
+export function resolveParallelCount(parallelCount: number | undefined): number {
+  if (parallelCount == null || !Number.isFinite(parallelCount) || parallelCount < 1) {
+    return 1;
+  }
+  return Math.floor(parallelCount);
+}
+
+/** Effective conductor area [mm²] of n parallel runs of cross-section A. */
+export function effectiveCrossSection(
+  crossSection: number,
+  parallelCount: number | undefined,
+): number {
+  return crossSection * resolveParallelCount(parallelCount);
+}
+
 const SQRT3 = Math.sqrt(3);
 const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
 const RHO = CABLE_RESISTIVITY;
@@ -274,7 +293,12 @@ export function runCalculations(
   /** Per-cable inputs the cross-section recommendation pass needs. */
   const edgeLoads = new Map<
     string,
-    { length: number; current: number; requiredCrossSection: number }
+    {
+      length: number;
+      current: number;
+      requiredCrossSection: number;
+      parallelCount: number;
+    }
   >();
 
   const preOrder: string[] = [];
@@ -305,11 +329,14 @@ export function runCalculations(
     const current = (totalCurrents.get(nodeId) || 0) * appliedFactor;
     const length = cableData.length || 0;
     const crossSection = cableData.crossSection || 25;
+    const parallelCount = resolveParallelCount(cableData.parallelCount);
+    // n parallel runs of A act as area n×A: drop and Rh scale as 1/n.
+    const area = effectiveCrossSection(crossSection, parallelCount);
 
-    const loopImpedance = calculateLoopImpedance(length, crossSection);
+    const loopImpedance = calculateLoopImpedance(length, area);
     const voltageDropV = calculateVoltageDropV(
       length,
-      crossSection,
+      area,
       current,
       phaseMode,
     );
@@ -327,18 +354,23 @@ export function runCalculations(
             phaseMode,
           )
         : allowedDropV;
-    const requiredCrossSection = calculateMinCrossSection(
-      length,
-      current,
-      edgeAllowedDropV,
-    );
+    // Excel A_min is the total aluminium the segment needs; store the size of
+    // each parallel run so it compares with the chosen crossSection.
+    const requiredCrossSection =
+      calculateMinCrossSection(length, current, edgeAllowedDropV) /
+      parallelCount;
     // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
 
     // Geometry and load are all the recommendation pass below needs: the
     // current a cable carries depends only on the downstream devices, not on
     // its cross-section, so hypothetical sizes can be evaluated cheaply.
-    edgeLoads.set(edgeId, { length, current, requiredCrossSection });
+    edgeLoads.set(edgeId, {
+      length,
+      current,
+      requiredCrossSection,
+      parallelCount,
+    });
 
     edgeDataMap.set(edgeId, {
       current,
@@ -376,8 +408,9 @@ export function runCalculations(
       load.requiredCrossSection > 0
         ? nextStandardCrossSection(load.requiredCrossSection)
         : SMALLEST_CROSS_SECTION;
+    // Thermal floor is on each run: I is shared across the parallel cables.
     const fromThermal = calculateThermalMinCrossSection(
-      load.current,
+      load.current / load.parallelCount,
       maxCurrentDensity,
     );
     recommended.set(
@@ -419,7 +452,10 @@ export function runCalculations(
         ? calculateVoltageDropPercent(
             calculateVoltageDropV(
               load.length,
-              recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+              effectiveCrossSection(
+                recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+                load.parallelCount,
+              ),
               load.current,
               phaseMode,
             ),
@@ -504,7 +540,10 @@ export function runCalculations(
       calculateVoltageDropPercent(
         calculateVoltageDropV(
           load.length,
-          recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+          effectiveCrossSection(
+            recommended.get(edgeId) ?? SMALLEST_CROSS_SECTION,
+            load.parallelCount,
+          ),
           load.current,
           phaseMode,
         ),
@@ -557,7 +596,7 @@ export function runCalculations(
 
     const voltageDropRequirement = Math.max(load?.requiredCrossSection ?? 0, inNetwork);
     const thermalRequirement = calculateThermalMinCrossSection(
-      load?.current ?? 0,
+      (load?.current ?? 0) / (load?.parallelCount ?? 1),
       maxCurrentDensity,
     );
     const binding = Math.max(voltageDropRequirement, thermalRequirement);
