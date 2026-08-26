@@ -7,7 +7,11 @@ import {
   NodeProps,
   useUpdateNodeInternals,
 } from "@xyflow/react";
-import type { CabinetNodeData } from "@/types/electrical";
+import type {
+  CabinetNodeData,
+  CabinetDisplayFieldKey,
+} from "@/types/electrical";
+import { CABINET_DISPLAY_FIELD_DEFAULTS } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { DiagonalCabinetSymbol, BOX_H, BOX_W } from "./diagonal-cabinet-symbol";
 import {
@@ -116,6 +120,8 @@ function CabinetInfo({
         : "text-center";
 
   const devices = data.devices || [];
+  const show = (key: CabinetDisplayFieldKey) =>
+    data.displayFields?.[key] ?? CABINET_DISPLAY_FIELD_DEFAULTS[key];
 
   return (
     <div
@@ -162,8 +168,8 @@ function CabinetInfo({
         </div>
       ))}
 
-      {/* Calculated values (matches Excel summary table T-AD rows 4-7) */}
-      {data.cumulativeVoltageDropV !== undefined &&
+      {show("voltageDrop") &&
+        data.cumulativeVoltageDropV !== undefined &&
         data.cumulativeVoltageDropV > 0 &&
         (() => {
           const percent = data.cumulativeVoltageDrop ?? 0;
@@ -180,22 +186,20 @@ function CabinetInfo({
             </div>
           );
         })()}
-      {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
-        <div className="font-medium text-blue-600">
-          {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance, language)} Ω
-        </div>
-      )}
-      {data.shortCircuitCurrent !== undefined &&
+      {show("loopImpedance") &&
+        data.loopImpedance !== undefined &&
+        data.loopImpedance > 0 && (
+          <div className="font-medium text-blue-600">
+            {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance, language)} Ω
+          </div>
+        )}
+      {show("shortCircuit") &&
+        data.shortCircuitCurrent !== undefined &&
         data.shortCircuitCurrent > 0 && (
           <div className="font-medium text-blue-600">
             {t("calc.iz")}: {formatCalc(data.shortCircuitCurrent, language)}
           </div>
         )}
-      {data.maxFuseRating !== undefined && data.maxFuseRating > 0 && (
-        <div className="font-medium text-blue-600">
-          {t("calc.maxFuse")}: {formatCalc(data.maxFuseRating, language)}
-        </div>
-      )}
     </div>
   );
 }

@@ -18,6 +18,8 @@ import {
   CableEdgeData,
   CablePdfFieldKey,
   CABLE_PDF_FIELD_DEFAULTS,
+  CabinetDisplayFieldKey,
+  CABINET_DISPLAY_FIELD_DEFAULTS,
   AszNodeData,
   Device,
   CABLE_CROSS_SECTIONS,
@@ -115,6 +117,18 @@ function CabinetProperties({
       getDownstreamChildLabels(nodeId, nodes, edges),
     ),
   );
+
+  const displayFieldOptions: { key: CabinetDisplayFieldKey; label: string }[] = [
+    { key: "voltageDrop", label: t("calc.voltageDrop") },
+    { key: "loopImpedance", label: t("calc.loopImpedance") },
+    { key: "shortCircuit", label: t("calc.iz") },
+  ];
+
+  const toggleDisplayField = (key: CabinetDisplayFieldKey, checked: boolean) => {
+    updateNodeData(nodeId, {
+      displayFields: { ...data.displayFields, [key]: checked },
+    });
+  };
 
   const handleUpdateDevice = (index: number, device: Device) => {
     const newDevices = [...devices];
@@ -323,6 +337,34 @@ function CabinetProperties({
           )}
         </div>
       )}
+
+      <div className="space-y-2 rounded-md border p-2">
+        <div>
+          <h4 className="text-xs font-medium text-foreground">
+            {t("pdf.fieldsTitle")}
+          </h4>
+          <p className="text-xs text-muted-foreground">{t("pdf.fieldsHint")}</p>
+        </div>
+        <div className="space-y-1.5">
+          {displayFieldOptions.map(({ key, label }) => (
+            <label
+              key={key}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <input
+                type="checkbox"
+                className="h-4 w-4 cursor-pointer accent-blue-600"
+                checked={
+                  data.displayFields?.[key] ??
+                  CABINET_DISPLAY_FIELD_DEFAULTS[key]
+                }
+                onChange={(e) => toggleDisplayField(key, e.target.checked)}
+              />
+              <span>{label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

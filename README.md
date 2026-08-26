@@ -126,7 +126,7 @@ For each cable segment, the engine calculates:
 - Loop impedance
 - Short-circuit current
 
-Cabinet nodes also display their own load, downstream load, the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating derived from that short-circuit current. Cumulative voltage drop is shown as a single compact line, volts and percent together against the allowed limit, e.g. `Voltage drop: 7.20 V • 1.80% / 4.00% ✓` (a warning mark and amber colour instead of the checkmark when the path is over the allowed limit). Numbers use a decimal comma in Hungarian and a decimal point in English.
+Cabinet nodes also display their own load and downstream load in the property sidebar. On the drawing, cumulative voltage drop is on by default (volts and percent on one line) and can be turned off; loop impedance and short-circuit current are optional per cabinet. The suggested maximum fuse rating is calculated and shown in the sidebar, not on the canvas. Numbers use a decimal comma in Hungarian and a decimal point in English.
 
 The engine supports both three-phase (400 V) and single-phase (230 V) systems, since the underlying formulas and conductor factors differ between the two.
 

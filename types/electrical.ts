@@ -35,8 +35,15 @@ export type CabinetNodeData = {
    * Suggested maximum fuse rating at this point [A] (Excel summary block
    * "Bizt" row: shortCircuitCurrent / FUSE_CURRENT_DIVISOR). A larger fuse
    * than this may not trip reliably on a fault this far from the source.
+   * Computed for the property sidebar; not shown on the canvas.
    */
   maxFuseRating?: number;
+  /**
+   * Which calculated lines are shown under this cabinet on the canvas (and
+   * therefore in the PDF). A missing flag falls back to
+   * CABINET_DISPLAY_FIELD_DEFAULTS.
+   */
+  displayFields?: Partial<Record<CabinetDisplayFieldKey, boolean>>;
 };
 
 /**
@@ -233,6 +240,24 @@ export const CABLE_PDF_FIELD_DEFAULTS: Record<CablePdfFieldKey, boolean> = {
   voltageDropV: false,
   voltageDropPercent: false,
   impedance: false,
+  shortCircuit: false,
+};
+
+/**
+ * Calculated cabinet lines that can be shown on the canvas. Voltage drop is
+ * on by default; loop impedance and short-circuit current start hidden.
+ */
+export type CabinetDisplayFieldKey =
+  | "voltageDrop"
+  | "loopImpedance"
+  | "shortCircuit";
+
+export const CABINET_DISPLAY_FIELD_DEFAULTS: Record<
+  CabinetDisplayFieldKey,
+  boolean
+> = {
+  voltageDrop: true,
+  loopImpedance: false,
   shortCircuit: false,
 };
 
