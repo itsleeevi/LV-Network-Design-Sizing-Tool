@@ -32,7 +32,8 @@ import {
   resolveDesignationTag,
 } from "@/lib/downstream";
 import { useT, useElementName } from "@/lib/i18n";
-import { formatCalc } from "@/lib/utils";
+import { formatCalc, formatLocaleNumber, formatStandardSize } from "@/lib/utils";
+import { useSettingsStore } from "@/store/settings-store";
 import { X, Trash2, Plus } from "lucide-react";
 
 function DeviceRow({
@@ -99,6 +100,7 @@ function CabinetProperties({
   data: CabinetNodeData;
 }) {
   const t = useT();
+  const language = useSettingsStore((s) => s.language);
   const elementName = useElementName();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const deleteNode = useFlowStore((s) => s.deleteNode);
@@ -265,14 +267,14 @@ function CabinetProperties({
           {data.ownCurrent !== undefined && (
             <div className="text-sm">
               {t("calc.current")}:{" "}
-              <span className="font-medium">{formatCalc(data.ownCurrent)}</span>
+              <span className="font-medium">{formatCalc(data.ownCurrent, language)}</span>
             </div>
           )}
           {data.totalCurrent !== undefined && (
             <div className="text-sm">
               {t("calc.totalCurrent")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.totalCurrent)}
+                {formatCalc(data.totalCurrent, language)}
               </span>
             </div>
           )}
@@ -280,7 +282,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.voltageDrop")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.cumulativeVoltageDropV)} V
+                {formatCalc(data.cumulativeVoltageDropV, language)} V
               </span>
             </div>
           )}
@@ -288,7 +290,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.voltageDrop")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.cumulativeVoltageDrop)} %
+                {formatCalc(data.cumulativeVoltageDrop, language)} %
               </span>
             </div>
           )}
@@ -296,7 +298,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.loopImpedance")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.loopImpedance)} Ω
+                {formatCalc(data.loopImpedance, language)} Ω
               </span>
             </div>
           )}
@@ -304,7 +306,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.iz")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.shortCircuitCurrent)}
+                {formatCalc(data.shortCircuitCurrent, language)}
               </span>
             </div>
           )}
@@ -312,7 +314,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.maxFuse")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.maxFuseRating)}
+                {formatCalc(data.maxFuseRating, language)}
               </span>
             </div>
           )}
@@ -557,6 +559,7 @@ function CableProperties({
   data: CableEdgeData;
 }) {
   const t = useT();
+  const language = useSettingsStore((s) => s.language);
   const updateEdgeData = useFlowStore((s) => s.updateEdgeData);
   const deleteEdge = useFlowStore((s) => s.deleteEdge);
   const nodes = useFlowStore((s) => s.nodes);
@@ -571,7 +574,7 @@ function CableProperties({
     { key: "dimensions", label: t("pdf.fieldDimensions") },
     { key: "current", label: t("calc.totalCurrent") },
     { key: "allowedVoltageDropV", label: t("cable.allowedDropV") },
-    { key: "requiredCrossSection", label: t("cable.minCrossSection") },
+    { key: "recommendedCrossSection", label: t("cable.recommendedCrossSection") },
     { key: "voltageDropV", label: t("cable.dropV") },
     { key: "voltageDropPercent", label: t("cable.dropPercent") },
     { key: "impedance", label: t("cable.impedance") },
@@ -672,7 +675,7 @@ function CableProperties({
       <div className="rounded-md border bg-muted/40 px-2.5 py-2 text-xs leading-snug text-muted-foreground">
         <p className="font-medium text-foreground">{t("cable.resistivity")}</p>
         <p className="mt-0.5 font-mono">
-          {ALUMINIUM_CABLE.resistivityOhmMm2PerM}
+          {formatLocaleNumber(ALUMINIUM_CABLE.resistivityOhmMm2PerM, language, 4)}
         </p>
       </div>
 
@@ -691,7 +694,7 @@ function CableProperties({
             <SelectContent>
               {CABLE_CROSS_SECTIONS.map((cs) => (
                 <SelectItem key={cs} value={String(cs)}>
-                  {cs} mm²
+                  {formatStandardSize(cs, language)} mm²
                 </SelectItem>
               ))}
             </SelectContent>
@@ -724,7 +727,7 @@ function CableProperties({
       </div>
       {/* Calculated values display - matching Excel columns exactly */}
       {(data.current !== undefined ||
-        data.requiredCrossSection !== undefined ||
+        data.recommendedCrossSection !== undefined ||
         data.voltageDropV !== undefined ||
         data.impedance !== undefined) && (
         <div className="rounded-md border bg-muted/50 p-2 space-y-1">
@@ -734,7 +737,7 @@ function CableProperties({
           {data.current !== undefined && data.current > 0 && (
             <div className="text-sm">
               {t("calc.totalCurrent")}:{" "}
-              <span className="font-medium">{formatCalc(data.current)}</span>
+              <span className="font-medium">{formatCalc(data.current, language)}</span>
             </div>
           )}
           {data.allowedVoltageDropV !== undefined &&
@@ -742,22 +745,22 @@ function CableProperties({
               <div className="text-sm">
                 {t("cable.allowedDropV")}:{" "}
                 <span className="font-medium">
-                  {formatCalc(data.allowedVoltageDropV)}
+                  {formatCalc(data.allowedVoltageDropV, language)}
                 </span>
               </div>
             )}
-          {data.requiredCrossSection !== undefined &&
-            data.requiredCrossSection > 0 && (
+          {data.recommendedCrossSection !== undefined &&
+            data.recommendedCrossSection > 0 && (
               <div className="text-sm">
-                {t("cable.minCrossSection")}:{" "}
+                {t("cable.recommendedCrossSection")}:{" "}
                 <span
                   className={
-                    data.requiredCrossSection > (data.crossSection || 0)
-                      ? "font-medium text-destructive"
-                      : "font-medium text-green-600"
+                    data.crossSection >= data.recommendedCrossSection
+                      ? "font-medium text-green-600"
+                      : "font-medium text-amber-600"
                   }
                 >
-                  {formatCalc(data.requiredCrossSection)}
+                  {formatStandardSize(data.recommendedCrossSection, language)}
                 </span>
               </div>
             )}
@@ -765,7 +768,7 @@ function CableProperties({
             <div className="text-sm">
               {t("cable.dropV")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.voltageDropV)}
+                {formatCalc(data.voltageDropV, language)}
               </span>
             </div>
           )}
@@ -773,14 +776,14 @@ function CableProperties({
             <div className="text-sm">
               {t("cable.dropPercent")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.voltageDropPercent)}
+                {formatCalc(data.voltageDropPercent, language)}
               </span>
             </div>
           )}
           {data.impedance !== undefined && (
             <div className="text-sm">
               {t("cable.impedance")}:{" "}
-              <span className="font-medium">{formatCalc(data.impedance)}</span>
+              <span className="font-medium">{formatCalc(data.impedance, language)}</span>
             </div>
           )}
           {data.shortCircuitCurrent !== undefined &&
@@ -788,7 +791,7 @@ function CableProperties({
               <div className="text-sm">
                 {t("cable.iz")}:{" "}
                 <span className="font-medium">
-                  {formatCalc(data.shortCircuitCurrent)}
+                  {formatCalc(data.shortCircuitCurrent, language)}
                 </span>
               </div>
             )}

@@ -11,8 +11,8 @@ export function cn(...inputs: ClassValue[]) {
  * (current, voltage drop, impedance, Iz, etc.), used everywhere they're
  * displayed: the canvas labels, the properties sidebar, and the PDF export.
  */
-export function formatCalc(value: number): string {
-  return value.toFixed(3);
+export function formatCalc(value: number, language: Language): string {
+  return formatLocaleNumber(value, language, 3);
 }
 
 /**
@@ -30,11 +30,23 @@ export function formatLocaleNumber(
 }
 
 /**
+ * Locale-aware number with trailing zeros stripped (lengths, device currents,
+ * standard cable sizes).
+ */
+export function formatNumber(
+  value: number,
+  language: Language,
+  maxDecimals = 2,
+): string {
+  const text = value.toFixed(maxDecimals).replace(/\.?0+$/, "");
+  return language === "hu" ? text.replace(".", ",") : text;
+}
+
+/**
  * Formats a standard cable size (from the fixed cross-section list, or a
  * user-chosen value) without padding with zeros: whole numbers show with no
  * decimals, fractional ones (e.g. 1.5) keep just what they need.
  */
 export function formatStandardSize(value: number, language: Language): string {
-  const text = value.toFixed(2).replace(/\.?0+$/, "");
-  return language === "hu" ? text.replace(".", ",") : text;
+  return formatNumber(value, language, 2);
 }

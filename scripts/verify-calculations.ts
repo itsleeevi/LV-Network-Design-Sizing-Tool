@@ -355,6 +355,86 @@ function verifyRackGraph() {
   }
 }
 
+/**
+ * The recommendation has to be usable as a whole. Setting every cable to its
+ * Javasolt must leave a network that is inside the limits, must not change the
+ * advice (otherwise setting one cable invalidates what was suggested for the
+ * others), and must keep every cable at least as thick as the cables it feeds.
+ */
+function verifyRecommendations(
+  label: string,
+  build: () => { nodes: Node[]; edges: Edge[] },
+) {
+  console.log(`\n=== Javasolt applied to the whole network: ${label} ===`);
+
+  const { nodes, edges } = build();
+  const first = runCalculations(nodes, edges);
+  const applied = first.edges.map((e) => {
+    const d = e.data as CableEdgeData;
+    return {
+      ...e,
+      data: { ...d, crossSection: d.recommendedCrossSection ?? d.crossSection },
+    };
+  });
+  const second = runCalculations(first.nodes, applied);
+
+  const cableData = (e: Edge) => e.data as CableEdgeData;
+  const allowedAt = (nodeId: string) => {
+    const incoming = second.edges.find((e) => e.target === nodeId);
+    return incoming ? (cableData(incoming).allowedVoltageDropV ?? 0) : 0;
+  };
+
+  let worstLabel = "";
+  let worstMargin = Infinity;
+  for (const n of second.nodes) {
+    if (n.type !== "cabinet") continue;
+    const d = n.data as CabinetNodeData;
+    const limit = allowedAt(n.id);
+    if (limit <= 0) continue;
+    const margin = limit - (d.cumulativeVoltageDropV ?? 0);
+    if (margin < worstMargin) {
+      worstMargin = margin;
+      worstLabel = `${d.label} ${(d.cumulativeVoltageDropV ?? 0).toFixed(2)} V vs é ${limit.toFixed(2)} V`;
+    }
+  }
+  const dropOk = worstMargin >= -1e-9;
+  if (!dropOk) failures++;
+  console.log(
+    `  [${dropOk ? "PASS" : "FAIL"}] every cabinet within é          tightest: ${worstLabel}`,
+  );
+
+  const drifted = second.edges.filter(
+    (e) =>
+      cableData(e).recommendedCrossSection !== undefined &&
+      cableData(e).recommendedCrossSection !== cableData(e).crossSection,
+  );
+  if (drifted.length > 0) failures++;
+  console.log(
+    `  [${drifted.length === 0 ? "PASS" : "FAIL"}] advice unchanged once applied   ${
+      drifted.length === 0
+        ? `all ${second.edges.length} cables stable`
+        : drifted.map((e) => e.id).join(", ")
+    }`,
+  );
+
+  const ungraded = second.edges.filter((e) => {
+    const own = cableData(e).recommendedCrossSection ?? 0;
+    return second.edges.some(
+      (c) =>
+        c.source === e.target &&
+        (cableData(c).recommendedCrossSection ?? 0) > own,
+    );
+  });
+  if (ungraded.length > 0) failures++;
+  console.log(
+    `  [${ungraded.length === 0 ? "PASS" : "FAIL"}] lépcsőzetesség holds            ${
+      ungraded.length === 0
+        ? "no cable feeds a thicker one"
+        : ungraded.map((e) => e.id).join(", ")
+    }`,
+  );
+}
+
 function main() {
   const { nodes, edges } = buildGraph();
   const result = runCalculations(nodes, edges);
@@ -372,6 +452,12 @@ function main() {
   approx(k4.voltageDropPercent, 0.3863859, "voltage drop [%]");
   approx(k4.impedance, 0.29744, "loop impedance Rh [Ω]");
   approx(k4.shortCircuitCurrent, 773.2652, "short-circuit Iz [A]");
+  // Javasolt is solved for the whole network from lengths and currents alone,
+  // so it does not depend on the installed 25 mm². ESZ4's Fesz. esés has to
+  // fit under é across K3 + K4 together: K3 35 mm² (3.40 V) + K4 16 mm²
+  // (2.41 V) = 5.81 V. Dropping either cable one size busts it (K4 at 10 mm²
+  // gives 7.26 V, K3 at 25 mm² gives 7.17 V).
+  approx(k4.recommendedCrossSection, 16, "recommended cross-section [mm²]");
 
   console.log("\n=== Cable K3 (L=200, A=25, I=12) vs Excel row 9 ===");
   const k3 = edge("K3");
@@ -381,6 +467,16 @@ function main() {
   approx(k3.voltageDropPercent, 1.1888797, "voltage drop [%]");
   approx(k3.impedance, 0.4576, "loop impedance Rh [Ω]");
   approx(k3.shortCircuitCurrent, 502.62238, "short-circuit Iz [A]");
+  approx(k3.recommendedCrossSection, 35, "recommended cross-section [mm²]");
+  // Lépcsőzetesség: the trunk is never thinner than the cable it feeds.
+  {
+    const ok =
+      (k3.recommendedCrossSection ?? 0) >= (k4.recommendedCrossSection ?? 0);
+    if (!ok) failures++;
+    console.log(
+      `  [${ok ? "PASS" : "FAIL"}] K3 >= K4 (lépcsőzetesség)          ${k3.recommendedCrossSection} mm² >= ${k4.recommendedCrossSection} mm²`,
+    );
+  }
 
   console.log("\n=== Cabinet ESZ4 (fed by K4) ===");
   const esz4 = node("esz4");
@@ -432,9 +528,16 @@ function main() {
       3.2198825 / 2,
       "2× required cross-section per run [mm²]",
     );
+    // Two runs share the current, so each run can be thinner than the 16 mm²
+    // a single K4 needs: 2×6 mm² is 3.22 V, and with K3 at 35 mm² ESZ4 lands
+    // at 6.62 V, still under é.
+    approx(k4x2.recommendedCrossSection, 6, "2× recommended cross-section [mm²]");
   }
 
   verifyRackGraph();
+
+  verifyRecommendations("3F chain", buildGraph);
+  verifyRecommendations("Rack network", buildRackGraph);
 
   console.log("\n" + "=".repeat(60));
   if (failures === 0) {

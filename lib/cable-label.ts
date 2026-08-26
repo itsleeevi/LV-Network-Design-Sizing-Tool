@@ -1,7 +1,7 @@
 import type { CableEdgeData, CablePdfFieldKey } from "@/types/electrical";
 import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
 import type { TranslationKey } from "@/lib/i18n";
-import { formatCalc, formatLocaleNumber, formatStandardSize } from "@/lib/utils";
+import { formatCalc, formatNumber, formatStandardSize } from "@/lib/utils";
 import type { Language } from "@/store/settings-store";
 
 export type Translate = (key: TranslationKey) => string;
@@ -20,8 +20,8 @@ export type CableLabelLine = {
  * for both the rendered label (wire-edge) and the label-size estimate the
  * collision-avoiding placement pass needs, so the two can never drift apart.
  *
- * Every line except the cross-section recommendation is opt-in per cable via
- * `pdfFields`, falling back to CABLE_PDF_FIELD_DEFAULTS when untouched.
+ * Every line is opt-in per cable via `pdfFields`, falling back to
+ * CABLE_PDF_FIELD_DEFAULTS when untouched.
  */
 export function getCableLabelLines(
   data: CableEdgeData | undefined,
@@ -46,24 +46,17 @@ export function getCableLabelLines(
       : "";
     lines.push({
       key: "dimensions",
-      text: `${data.length} m • ${t("cable.installedCrossSection")}: ${parallels}${formatStandardSize(data.crossSection, language)} mm²`,
+      text: `${formatNumber(data.length, language, 2)} m • ${t("cable.installedCrossSection")}: ${parallels}${formatStandardSize(data.crossSection, language)} mm²`,
       className: "font-medium",
     });
   }
 
-  // Always shown, as a named pair: what this cable needs and the standard
-  // size that covers it. The recommendation is colour-coded so an undersized
-  // cable stands out.
   const recommended = data.recommendedCrossSection;
-  if (recommended != null && recommended > 0) {
-    const needed = data.networkRequiredCrossSection;
-    if (needed != null && needed > 0) {
-      lines.push({
-        key: "calculatedCrossSection",
-        text: `${t("canvas.calculatedCrossSection")}: ${formatLocaleNumber(needed, language, 2)} mm²`,
-        className: "font-medium text-blue-600",
-      });
-    }
+  if (
+    show("recommendedCrossSection") &&
+    recommended != null &&
+    recommended > 0
+  ) {
     lines.push({
       key: "recommendedCrossSection",
       text: `${t("canvas.recommendedCrossSection")}: ${formatStandardSize(recommended, language)} mm²`,
@@ -77,7 +70,7 @@ export function getCableLabelLines(
   if (show("current") && data.current != null && data.current > 0) {
     lines.push({
       key: "current",
-      text: `${t("canvas.current")}: ${formatCalc(data.current)} A`,
+      text: `${t("canvas.current")}: ${formatCalc(data.current, language)} A`,
       className: calc,
     });
   }
@@ -89,22 +82,7 @@ export function getCableLabelLines(
   ) {
     lines.push({
       key: "allowedVoltageDropV",
-      text: `${t("canvas.allowedDropV")}: ${formatCalc(data.allowedVoltageDropV)} V`,
-      className: calc,
-    });
-  }
-
-  // Skipped when the always-on pair above already showed this same number, so
-  // ticking the checkbox cannot print the value twice.
-  if (
-    show("requiredCrossSection") &&
-    data.requiredCrossSection != null &&
-    data.requiredCrossSection > 0 &&
-    !lines.some((l) => l.key === "calculatedCrossSection")
-  ) {
-    lines.push({
-      key: "requiredCrossSection",
-      text: `${t("canvas.minCrossSection")}: ${formatCalc(data.requiredCrossSection)} mm²`,
+      text: `${t("canvas.allowedDropV")}: ${formatCalc(data.allowedVoltageDropV, language)} V`,
       className: calc,
     });
   }
@@ -112,7 +90,7 @@ export function getCableLabelLines(
   if (show("voltageDropV") && data.voltageDropV != null && data.voltageDropV > 0) {
     lines.push({
       key: "voltageDropV",
-      text: `${t("calc.voltageDrop")}: ${formatCalc(data.voltageDropV)} V`,
+      text: `${t("calc.voltageDrop")}: ${formatCalc(data.voltageDropV, language)} V`,
       className: calc,
     });
   }
@@ -124,7 +102,7 @@ export function getCableLabelLines(
   ) {
     lines.push({
       key: "voltageDropPercent",
-      text: `${t("calc.voltageDrop")}: ${formatCalc(data.voltageDropPercent)} %`,
+      text: `${t("calc.voltageDrop")}: ${formatCalc(data.voltageDropPercent, language)} %`,
       className: calc,
     });
   }
@@ -132,7 +110,7 @@ export function getCableLabelLines(
   if (show("impedance") && data.impedance != null && data.impedance > 0) {
     lines.push({
       key: "impedance",
-      text: `${t("calc.loopImpedance")}: ${formatCalc(data.impedance)} Ω`,
+      text: `${t("calc.loopImpedance")}: ${formatCalc(data.impedance, language)} Ω`,
       className: calc,
     });
   }
@@ -144,7 +122,7 @@ export function getCableLabelLines(
   ) {
     lines.push({
       key: "shortCircuit",
-      text: `${t("canvas.iz")}: ${formatCalc(data.shortCircuitCurrent)} A`,
+      text: `${t("canvas.iz")}: ${formatCalc(data.shortCircuitCurrent, language)} A`,
       className: calc,
     });
   }

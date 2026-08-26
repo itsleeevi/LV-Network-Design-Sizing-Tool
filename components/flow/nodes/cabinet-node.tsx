@@ -23,7 +23,7 @@ import {
 } from "@/lib/downstream";
 import { useT, useSideLabel, useElementName } from "@/lib/i18n";
 import { useSettingsStore } from "@/store/settings-store";
-import { cn, formatCalc, formatLocaleNumber } from "@/lib/utils";
+import { cn, formatCalc, formatLocaleNumber, formatNumber } from "@/lib/utils";
 
 function SideHandle({
   position,
@@ -156,7 +156,7 @@ function CabinetInfo({
           {dev.kmMarker
             ? ` (${dev.kmMarker} ${t("unit.kmsz")})`
             : dev.current
-              ? ` ${dev.current}A`
+              ? ` ${formatNumber(dev.current, language, 2)}A`
               : ""}
         </div>
       ))}
@@ -181,18 +181,18 @@ function CabinetInfo({
         })()}
       {data.loopImpedance !== undefined && data.loopImpedance > 0 && (
         <div className="font-medium text-blue-600">
-          {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance)} Ω
+          {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance, language)} Ω
         </div>
       )}
       {data.shortCircuitCurrent !== undefined &&
         data.shortCircuitCurrent > 0 && (
           <div className="font-medium text-blue-600">
-            {t("calc.iz")}: {formatCalc(data.shortCircuitCurrent)}
+            {t("calc.iz")}: {formatCalc(data.shortCircuitCurrent, language)}
           </div>
         )}
       {data.maxFuseRating !== undefined && data.maxFuseRating > 0 && (
         <div className="font-medium text-blue-600">
-          {t("calc.maxFuse")}: {formatCalc(data.maxFuseRating)}
+          {t("calc.maxFuse")}: {formatCalc(data.maxFuseRating, language)}
         </div>
       )}
     </div>

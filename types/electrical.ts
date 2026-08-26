@@ -214,7 +214,7 @@ export type CablePdfFieldKey =
   | "dimensions"
   | "current"
   | "allowedVoltageDropV"
-  | "requiredCrossSection"
+  | "recommendedCrossSection"
   | "voltageDropV"
   | "voltageDropPercent"
   | "impedance"
@@ -229,7 +229,7 @@ export const CABLE_PDF_FIELD_DEFAULTS: Record<CablePdfFieldKey, boolean> = {
   dimensions: false,
   current: false,
   allowedVoltageDropV: false,
-  requiredCrossSection: false,
+  recommendedCrossSection: false,
   voltageDropV: false,
   voltageDropPercent: false,
   impedance: false,
