@@ -46,7 +46,7 @@ export function getCableLabelLines(
       : "";
     lines.push({
       key: "dimensions",
-      text: `${formatNumber(data.length, language, 2)} m • ${t("cable.installedCrossSection")}: ${parallels}${formatStandardSize(data.crossSection, language)} mm²`,
+      text: `${formatNumber(data.length, language, 2)} m • ${parallels}${formatStandardSize(data.crossSection, language)} mm²`,
       className: "font-medium",
     });
   }
