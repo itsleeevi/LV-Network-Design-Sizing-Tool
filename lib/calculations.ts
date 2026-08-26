@@ -343,7 +343,7 @@ export function runCalculations(
       systemVoltage,
       phaseMode,
     );
-    // Per-cable allowed drop overrides the global ÁSZ value when set.
+    // Per-cable allowed drop overrides the source node's global value when set.
     const edgeAllowedDropV =
       cableData.allowedVoltageDropPercent != null
         ? calculateAllowedVoltageDropV(
@@ -396,9 +396,9 @@ export function runCalculations(
   // currents only. The installed sizes are deliberately not an input: a
   // recommendation that reads the sizes the user has set changes as soon as
   // one cable is set to it, so the advice on the rest of the network would
-  // no longer hold. This way "set every cable to its Javasolt" is a network
-  // that is inside the limits, and re-running the engine on it repeats the
-  // same numbers.
+  // no longer hold. This way "set every cable to its Recommended size" is a
+  // network that is inside the limits, and re-running the engine on it
+  // repeats the same numbers.
   const maxCurrentDensity =
     sourceData.maxCurrentDensity ?? DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2;
 
@@ -455,7 +455,8 @@ export function runCalculations(
     if (limit > 0) cabinetLimits.set(node.id, limit);
   }
 
-  // While some cabinet's Fesz. esés is over its é, step up the one cable on
+  // While some cabinet's voltage drop is over its allowed reference drop,
+  // step up the one cable on
   // its path that buys the most volts for a single standard size. Widening
   // the biggest contributor first keeps the taper the network already has,
   // rather than dumping the whole correction on the last cable or scaling
@@ -606,7 +607,7 @@ export function runCalculations(
       updates.networkRequiredCrossSection = binding;
       updates.networkRequiredCrossSectionReason =
         thermalRequirement > voltageDropRequirement ? "current" : "voltageDrop";
-      // Whether lépcsőzetesség alone pushed the recommendation past what
+      // Whether grading alone pushed the recommendation past what
       // rounding the requirement up would already have given it.
       updates.recommendedGradedUp = size > nextStandardCrossSection(binding);
     }

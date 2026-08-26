@@ -105,11 +105,18 @@ const TRANSFORMER_SYMBOL = svg(
     `<circle cx="28" cy="8" r="5" fill="none" stroke="#000" stroke-width="1"/>`,
 );
 
+const DISTRIBUTOR_SYMBOL = svg(
+  `<g transform="translate(15 2)">` +
+    `<rect x="0" y="0" width="16" height="12" fill="none" stroke="#000" stroke-width="1"/>` +
+    `<text x="8" y="10" text-anchor="middle" font-size="9" font-family="Arial" font-weight="700">E</text>` +
+    `</g>`,
+);
+
 function svg(inner: string): string {
   return `<svg width="46" height="16" viewBox="0 0 46 16" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
 }
 
-/** Build the legend (jelmagyarázat) DOM, matching the canvas symbols + wording. */
+/** Build the legend DOM, matching the canvas symbols and wording. */
 function buildLegendElement(language: Language): HTMLElement {
   const t = (k: TranslationKey) => translate(language, k);
 
@@ -137,6 +144,7 @@ function buildLegendElement(language: Language): HTMLElement {
     ${row(CABLE_LVD_SYMBOL, t("cable.uhe"), t("legend.cableUhe"))}
     ${row(CABINET_SYMBOL, t("cabinet.defaultLabel"), t("legend.esz"))}
     ${row(METER_SYMBOL, t("node.fm.name"), t("legend.fm"))}
+    ${row(DISTRIBUTOR_SYMBOL, t("node.fe.name"), t("legend.fe"))}
     ${row(TRANSFORMER_SYMBOL, t("node.asz.name"), t("legend.asz"))}`;
   return el;
 }

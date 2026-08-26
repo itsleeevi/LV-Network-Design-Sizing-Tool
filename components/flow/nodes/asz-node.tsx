@@ -18,7 +18,7 @@ import { useMemo } from "react";
 const BOX_W = 52;
 const BOX_H = 22;
 
-/** ÁSZ: horizontal box with two overlapping circles (transformer symbol). */
+/** Utility supply (ÁSZ): horizontal box with two overlapping circles (transformer symbol). */
 export function AszNode({ id, data, selected }: NodeProps) {
   const elementName = useElementName();
   const d = data as AszNodeData;

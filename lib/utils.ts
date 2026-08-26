@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 /**
  * Consistent 3-decimal formatting for calculated electrical values
- * (current, voltage drop, impedance, Iz, etc.), used everywhere they're
+ * (current, voltage drop, impedance, short-circuit current, etc.), used everywhere they're
  * displayed: the canvas labels, the properties sidebar, and the PDF export.
  */
 export function formatCalc(value: number, language: Language): string {

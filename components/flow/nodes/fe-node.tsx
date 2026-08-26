@@ -5,17 +5,19 @@ import type { FeNodeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { getConnectedSides } from "@/lib/cabinet-label-placement";
 import { getDownstreamChildLabels, resolveDesignationTag } from "@/lib/downstream";
-import { useT, useSideLabel } from "@/lib/i18n";
+import { useT, useSideLabel, useElementName, useDiagramText } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
 
 const BOX_W = 52;
 const BOX_H = 22;
 
-/** FE (Főelosztó - Main Distribution) node */
+/** Main distributor (FE) node. */
 export function FeNode({ id, data, selected }: NodeProps) {
   const t = useT();
   const sideLabel = useSideLabel();
+  const elementName = useElementName();
+  const diagramText = useDiagramText();
   const d = data as FeNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
   const edges = useFlowStore((s) => s.edges);
@@ -51,7 +53,7 @@ export function FeNode({ id, data, selected }: NodeProps) {
     >
       {/* Label above */}
       <div className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1 text-center text-xs font-medium leading-none text-red-600">
-        {d.label}
+        {elementName(d.label, "fe")}
       </div>
 
       {/* FE symbol: box with "E" */}
@@ -63,7 +65,7 @@ export function FeNode({ id, data, selected }: NodeProps) {
           {d.kmMarker && <div>M1 {d.kmMarker} {t("unit.kmer")}</div>}
           {d.side && <div>{sideLabel(d.side)} {t("unit.side")}</div>}
           {d.description && <div>{d.description}</div>}
-          {tag && <div>{tag}</div>}
+          {tag && <div>{diagramText(tag)}</div>}
         </div>
       )}
 

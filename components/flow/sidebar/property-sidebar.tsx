@@ -31,7 +31,7 @@ import {
   getDownstreamChildLabels,
   resolveDesignationTag,
 } from "@/lib/downstream";
-import { useT, useElementName } from "@/lib/i18n";
+import { useT, useElementName, useDiagramText } from "@/lib/i18n";
 import { formatCalc, formatLocaleNumber, formatStandardSize } from "@/lib/utils";
 import { useSettingsStore } from "@/store/settings-store";
 import { X, Trash2, Plus } from "lucide-react";
@@ -102,15 +102,18 @@ function CabinetProperties({
   const t = useT();
   const language = useSettingsStore((s) => s.language);
   const elementName = useElementName();
+  const diagramText = useDiagramText();
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const deleteNode = useFlowStore((s) => s.deleteNode);
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
 
   const devices = data.devices || [];
-  const autoTag = resolveDesignationTag(
-    undefined,
-    getDownstreamChildLabels(nodeId, nodes, edges),
+  const autoTag = diagramText(
+    resolveDesignationTag(
+      undefined,
+      getDownstreamChildLabels(nodeId, nodes, edges),
+    ),
   );
 
   const handleUpdateDevice = (index: number, device: Device) => {
@@ -518,7 +521,7 @@ function FmFeProperties({
         <Label htmlFor="label">{t("field.name")}</Label>
         <Input
           id="label"
-          value={type === "fe" ? data.label : elementName(data.label, "fm")}
+          value={elementName(data.label, type === "fe" ? "fe" : "fm")}
           onChange={(e) => updateNodeData(nodeId, { label: e.target.value })}
         />
       </div>

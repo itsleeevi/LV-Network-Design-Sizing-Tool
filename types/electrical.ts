@@ -186,7 +186,7 @@ export type CableEdgeData = {
   /** Standard cross-section [mm²] to install; the recommendation. */
   recommendedCrossSection?: number;
   /**
-   * True when lépcsőzetesség (grading, being fed at least as large as the
+   * True when grading (being fed at least as large as the
    * largest cable it feeds) is the sole reason `recommendedCrossSection` sits
    * above `nextStandardCrossSection(networkRequiredCrossSection)`.
    */

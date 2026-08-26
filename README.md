@@ -37,7 +37,7 @@ Users can add a utility supply, a main meter, a main distributor, and roadside d
 - Required cable cross-section, plus a recommended standard size graded across the whole network
 - Segment and cumulative voltage drop, in both volts and percent
 - Cumulative loop impedance and short-circuit current at every cabinet
-- Suggested maximum fuse rating ("Bizt") at every cabinet
+- Suggested maximum fuse rating at every cabinet
 - Downstream current across the network, optionally scaled to a design current with a configurable safety factor
 
 Projects can be automatically arranged, saved locally or exported to a file, and printed as a PDF schematic.
@@ -83,13 +83,13 @@ flowchart LR
     Store --> PDF
 ```
 
-The canvas (React Flow) only renders whatever is in the Zustand store. Every user action (adding an element, drawing a cable, editing a property, running "Calculate", clicking "Rendezés" to auto-layout) mutates the store, which triggers the calculation engine and re-renders the diagram. Nothing about the electrical math lives inside a React component.
+The canvas (React Flow) only renders whatever is in the Zustand store. Every user action (adding an element, drawing a cable, editing a property, running Calculate, clicking Auto-layout) mutates the store, which triggers the calculation engine and re-renders the diagram. Nothing about the electrical math lives inside a React component.
 
 ## Calculation Engine
 
 The electrical calculation logic is implemented separately from the interface in `lib/calculations.ts`, with graph helpers in `lib/downstream.ts`.
 
-The engine treats the network as a graph rooted at the utility supply (ÁSZ) node:
+The engine treats the network as a graph rooted at the utility supply node:
 
 1. It builds an adjacency list from the cable edges.
 2. It runs a breadth-first traversal from the supply node to establish parent/child direction for every element.
@@ -100,26 +100,17 @@ The engine treats the network as a graph rooted at the utility supply (ÁSZ) nod
 
 ### Recommended Cross-Sections
 
-Every calculation run also reports two cross-sections per cable, on the wire label:
+The recommended size is optional on the wire label: tick **Recommended** in the cable's displayed-values list. It is green when the size currently set is adequate and amber when it is too small.
 
-- **Szükséges min. / Required min.**: the continuous need in mm² after network voltage drop and the thermal current-density floor.
-- **Javasolt / Recommended**: the standard size to actually install, green when the size currently set is adequate and amber when it is too small.
+The engine solves the recommendation for the whole network from topology, lengths, and currents only. Installed sizes are not an input, so setting every cable to its recommended size is a network that stays inside the limits, and re-running the engine repeats the same numbers.
 
-The calculated figure is deliberately larger than the textbook per-cable formula `A = ρ L I / é` alone. That formula looks at one cable in isolation, and `é` is defined as `0.75 × U × ε / √3`, which means a cable sitting exactly at that figure already spends 75% of the entire allowed voltage drop by itself (3% out of a 4% budget). One cable can get away with that; a path of two or more cannot. A short trunk also has almost no voltage drop of its own however much current it carries, so a thermal floor is needed as well. The reported figure is therefore the largest of:
+The steps are:
 
-- the per-cable formula above,
-- the thinnest this cable could be, with every other cable at its recommended size, before some cabinet downstream of it exceeds the allowed cumulative drop, and
-- `I / maxCurrentDensity` from the ÁSZ node's thermal density setting (default 2 A/mm²; set to 0 to disable).
+1. **Thermal floor**: every cable starts at the next standard size above `I / maxCurrentDensity` (default 2 A/mm² on the utility-supply node; set to 0 to disable), or at the smallest standard size if density is off. This is a single editable current-density number, not a full ampacity table (cable type, installation, soil, and grouping are not modelled).
+2. **Cumulative voltage drop**: while any cabinet's path drop in volts exceeds the allowed reference drop on its incoming cable, step up the one path cable that buys the most volts for a single standard size. Widening the biggest contributor first keeps the taper the network already has, rather than dumping the whole correction on the last cable.
+3. **Grading**: a cable is never thinner than any cable it feeds, so cross-sections taper away from the source and never step up. Applied last, so a trunk that only needed a small size for its own drop is still raised if it feeds a thicker branch.
 
-Getting from there to the recommendation adds:
-
-- **Thermal floor**: raise every cable to at least the next standard size above `I / maxCurrentDensity`, so a trunk feeding many short branches cannot grade down to a branch-sized section while carrying the sum of their currents. This is a single editable current-density number, not a full ampacity table (cable type, installation, soil and grouping are not modelled).
-- **Lépcsőzetesség (grading)**: a cable is never thinner than any cable it feeds, so cross-sections taper away from the source and never step up.
-- **Cumulative voltage drop**: since drop is inversely proportional to area, **a path that comes out N times over budget has every cable on it widened N times over**, then each is rounded up to the next standard size. Spreading the correction across the whole path preserves the taper, instead of dumping it all onto one cable. A cable carrying several over-budget paths takes the largest factor asked of it, and because rounding up to standard sizes overshoots slightly, this repeats until it settles.
-
-Because grading can still bind after the thermal floor, the recommendation is sometimes above what "Szükséges min." alone would need. That remaining gap means the cable is being set by what it feeds rather than by its own drop or density.
-
-Because a cable's current depends only on the devices downstream of it and not on its own cross-section, these candidate sizes are evaluated without re-running the whole engine. The result does not depend on the cross-sections currently set, only on lengths, loads, the allowed drop, the density setting, and the topology.
+The Excel per-cable formula `A = ρ L I / é` (with `é = 0.75 × U × ε / √3` on three-phase) is kept as `requiredCrossSection` and shown in the property sidebar as the required minimum. It is not what the recommendation rounds up from, and it is not shown on the wire label. `networkRequiredCrossSection` is an internal continuous need and is also not shown on the label.
 
 The recommendation is advice, not an automatic edit: cross-sections are only ever changed by editing a cable.
 
@@ -135,9 +126,9 @@ For each cable segment, the engine calculates:
 - Loop impedance
 - Short-circuit current
 
-Cabinet nodes also display their own load, downstream load, the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating ("Bizt") derived from that short-circuit current. Cumulative voltage drop is shown as a single compact line, volts and percent together against the allowed limit, e.g. `Feszültségesés: 7,20 V • 1,80% / 4,00% ✓` (a warning mark and amber colour instead of the checkmark when the path is over the allowed limit). Numbers use a decimal comma in Hungarian and a decimal point in English.
+Cabinet nodes also display their own load, downstream load, the cumulative loop impedance and short-circuit current for the whole path back to the supply, and the suggested maximum fuse rating derived from that short-circuit current. Cumulative voltage drop is shown as a single compact line, volts and percent together against the allowed limit, e.g. `Voltage drop: 7.20 V • 1.80% / 4.00% ✓` (a warning mark and amber colour instead of the checkmark when the path is over the allowed limit). Numbers use a decimal comma in Hungarian and a decimal point in English.
 
-The engine supports both three-phase (3F, 400 V) and single-phase (1F, 230 V) systems, since the underlying formulas and conductor factors differ between the two.
+The engine supports both three-phase (400 V) and single-phase (230 V) systems, since the underlying formulas and conductor factors differ between the two.
 
 ### Example Formulas
 
@@ -150,16 +141,16 @@ Three-phase voltage drop:
 Loop impedance (go + return path):
 
 ```text
-Rh = 2 x rho x L / A
+Z = 2 x rho x L / A
 ```
 
 Short-circuit current:
 
 ```text
-Iz = 230 V / Rh
+Isc = 230 V / Z
 ```
 
-Design current, when the ASZ node's "design current" option is enabled:
+Design current, when the utility-supply node's design-current option is enabled:
 
 ```text
 I_design = (raw device total x safety factor) / number of phases
@@ -170,10 +161,10 @@ The safety factor defaults to 1.2 but is editable per project, and any individua
 Suggested maximum fuse rating:
 
 ```text
-Bizt = Iz / 8
+I_fuse = Isc / 8
 ```
 
-Where `L` is cable length, `A` is conductor cross-section, `I` is current, and `rho` is the resistivity of aluminium conductor (the only material this tool models, matching the reference calculation).
+Where `L` is cable length, `A` is conductor cross-section, `I` is current, and `rho` is the resistivity of aluminium conductor (the only material this tool models, matching the reference calculation). The reference spreadsheet labels loop impedance, short-circuit current, and fuse rating as Rh, Iz, and Bizt.
 
 ## Calculation Verification
 
@@ -188,7 +179,7 @@ Verified values include:
 - Voltage drop in volts and as a percentage, per cable and cumulative
 - Loop impedance, per cable and cumulative
 - Short-circuit current
-- Suggested maximum fuse rating ("Bizt")
+- Suggested maximum fuse rating
 
 Run the verification:
 
@@ -199,13 +190,13 @@ pnpm verify:calc
 ## Features
 
 - **Interactive canvas**: drag, pan, and zoom a node-based schematic diagram
-- **Network elements**: Utility Supply (ÁSZ), Main Meter (FM), Main Distributor (FE), and distribution cabinets / feeder pillars (ESZ)
+- **Network elements**: Utility Supply (US), Main Meter (MM), Main Distributor (MD), and feeder pillars (FP). Saved projects still store the Hungarian abbreviations (ÁSZ, FM, FE, ESZ); the English UI displays the English ones.
 - **Wire mode**: connect elements with cables by switching modes, and optionally name each cable
 - **Auto layout**: re-flow the whole network from the supply node with uniform, collision-avoiding spacing
 - **Calculations**: cable sizing, voltage drop, cumulative loop impedance, short-circuit current, and maximum fuse rating across the whole network, with an optional design-current mode
 - **Save & open**: save projects to a file, with automatic localStorage autosave that survives refreshes
 - **PDF export**: export the drawing to a print-ready PDF with a legend, with per-cable control over which calculated values are shown
-- **Bilingual**: full Hungarian / English UI
+- **Bilingual**: full Hungarian / English UI. English uses US, MM, MD, FP, and Isc; Hungarian uses ÁSZ, FM, FE, ESZ, and Iz. Decimals follow the active language (comma vs dot).
 - **Property editor**: select any element or cable to inspect and edit its data and computed values, all consistently formatted to 3 decimal places with units
 
 ## Tech Stack

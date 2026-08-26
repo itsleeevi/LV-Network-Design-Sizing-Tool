@@ -165,8 +165,8 @@ function generatePathMarkers(
   return { crosses, labels };
 }
 
-/** 
- * Underground cable edge with orthogonal routing and Hungarian notation.
+/**
+ * Underground cable edge with orthogonal routing and bilingual markings.
  */
 export function WireEdge({
   id,

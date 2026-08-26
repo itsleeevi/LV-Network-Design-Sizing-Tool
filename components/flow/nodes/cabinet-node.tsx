@@ -21,7 +21,7 @@ import {
   getDownstreamChildLabels,
   resolveDesignationTag,
 } from "@/lib/downstream";
-import { useT, useSideLabel, useElementName } from "@/lib/i18n";
+import { useT, useSideLabel, useElementName, useDiagramText } from "@/lib/i18n";
 import { useSettingsStore } from "@/store/settings-store";
 import { cn, formatCalc, formatLocaleNumber, formatNumber } from "@/lib/utils";
 
@@ -106,6 +106,7 @@ function CabinetInfo({
 }) {
   const t = useT();
   const sideLabel = useSideLabel();
+  const diagramText = useDiagramText();
   const language = useSettingsStore((s) => s.language);
   const align =
     placement === "left"
@@ -147,9 +148,9 @@ function CabinetInfo({
       )}
 
       {/* Designation tag — downstream out-directions, or custom override */}
-      {tag && <div>{tag}</div>}
+      {tag && <div>{diagramText(tag)}</div>}
 
-      {/* Devices list - Berendezés (km szelvény / Áram) */}
+      {/* Device list (type, chainage / current) */}
       {devices.map((dev, i) => (
         <div key={i}>
           {dev.type}

@@ -29,6 +29,7 @@ const hu = {
   "legend.units": "Mértékegységek és jelölések",
   "legend.asz": "Transzformátor",
   "legend.fm": "Tervezett földre telepített mérőszekrény",
+  "legend.fe": "Főelosztó",
   "legend.esz": "Tervezett földre telepített elosztószekrény",
   "legend.cable04": "Tervezett 0,4 kV-os földkábel",
   "legend.cableUhe": "Tervezett 0,4 kV-os földkábel",
@@ -64,6 +65,7 @@ const hu = {
   // Element display names — abbreviations used on the drawing
   "node.asz.name": "ÁSZ",
   "node.fm.name": "FM",
+  "node.fe.name": "FE",
   "cabinet.defaultLabel": "ESZ",
 
   // Cabinet
@@ -95,7 +97,7 @@ const hu = {
   "asz.phase1": "Egyfázisú (1F · 230 V)",
   "asz.voltage": "Hálózati feszültség (V)",
   "asz.scPower": "Rövidzárlati teljesítmény (MVA)",
-  "asz.allowedDrop": "Megengedett fesz esés ε [%]",
+  "asz.allowedDrop": "Megengedett feszültségesés ε [%]",
   "asz.useDesignCurrent": "Mértékadó áram számítása",
   "asz.useDesignCurrentHint":
     "A kábelek árama a mögöttes berendezések összárama × szorzó / fázisok száma. Kikapcsolva a beírt áramok változatlanul összegződnek.",
@@ -103,7 +105,7 @@ const hu = {
   "asz.designCurrentSafetyFactorHint": "Alapértelmezett: 1,2.",
   "asz.maxCurrentDensity": "Max. áramsűrűség [A/mm²]",
   "asz.maxCurrentDensityHint":
-    "Hőterhelési alsó határ a keresztmetszet-ajánláshoz. Alapértelmezett: 2. 0 = kikapcsolva.",
+    "Hőterhelési alsó határ a keresztmetszet-ajánláshoz. Alapértelmezett: 2 A/mm²; 0 = kikapcsolva.",
 
   // Node titles
   "node.fm": "Főmérő (FM)",
@@ -117,7 +119,7 @@ const hu = {
   "cable.length": "Kábel hossza [m]",
   "cable.allowedDrop": "Megengedett feszültségesés ε [%]",
   "cable.allowedDropHint": "Üresen hagyva az ÁSZ globális értékét használja.",
-  "cable.allowedDropV": "Megengedett mértékadó feszültségesés é [V]",
+  "cable.allowedDropV": "Megengedett mértékadó feszültségesés ε [V]",
   "cable.skipDesignCurrentFactor": "Mértékadó áram szorzó nélkül",
   "cable.skipDesignCurrentFactorHint":
     "Ennél a kábelnél a mögöttes berendezések nyers összárama számít, szorzó nélkül.",
@@ -153,7 +155,7 @@ const hu = {
   "reason.grading": "lépcsőzetesség miatt",
 
   // Cable markings (drawing)
-  "cable.kv04": "0.4kV",
+  "cable.kv04": "0,4kV",
   "cable.uhe": "ÜH-E",
 } as const;
 
@@ -185,9 +187,10 @@ const en: Record<TranslationKey, string> = {
   "legend.elements": "Elements",
   "legend.cables": "Cables",
   "legend.values": "Calculated values",
-  "legend.units": "Units & markers",
+  "legend.units": "Units and markers",
   "legend.asz": "Transformer",
   "legend.fm": "Planned ground-mounted meter cabinet",
+  "legend.fe": "Main distributor",
   "legend.esz": "Planned ground-mounted distribution cabinet",
   "legend.cable04": "Planned 0.4 kV underground cable",
   "legend.cableUhe": "Planned 0.4 kV underground cable",
@@ -223,6 +226,7 @@ const en: Record<TranslationKey, string> = {
   // Element display names — abbreviations used on the drawing
   "node.asz.name": "US",
   "node.fm.name": "MM",
+  "node.fe.name": "MD",
   "cabinet.defaultLabel": "FP",
 
   // Cabinet
@@ -244,14 +248,14 @@ const en: Record<TranslationKey, string> = {
   "calc.totalCurrent": "Total current [A]",
   "calc.voltageDrop": "Voltage drop",
   "calc.loopImpedance": "Loop imp.",
-  "calc.iz": "Iz [A]",
+  "calc.iz": "Isc [A]",
   "calc.maxFuse": "Max fuse [A]",
 
-  // ÁSZ
-  "asz.title": "Utility Supply",
+  // Utility supply
+  "asz.title": "Utility Supply (US)",
   "asz.phaseMode": "Phase mode",
-  "asz.phase3": "Three-phase (3F · 400 V)",
-  "asz.phase1": "Single-phase (1F · 230 V)",
+  "asz.phase3": "Three-phase (400 V)",
+  "asz.phase1": "Single-phase (230 V)",
   "asz.voltage": "Mains voltage (V)",
   "asz.scPower": "Short-circuit power (MVA)",
   "asz.allowedDrop": "Allowed voltage drop ε [%]",
@@ -262,33 +266,34 @@ const en: Record<TranslationKey, string> = {
   "asz.designCurrentSafetyFactorHint": "Default: 1.2.",
   "asz.maxCurrentDensity": "Max. current density [A/mm²]",
   "asz.maxCurrentDensityHint":
-    "Thermal floor for cross-section recommendations. Default: 2. Set to 0 to disable.",
+    "Thermal floor for cross-section recommendations. Default: 2 A/mm². Set to 0 to disable.",
 
   // Node titles
   "node.fm": "Main Meter (MM)",
-  "node.fe": "Main Distributor (FE)",
+  "node.fe": "Main Distributor (MD)",
   "node.feed": "Main Meter (MM)",
 
   // Cable
   "cable.title": "Cable",
   "cable.name": "Cable name / designation",
-  "cable.namePlaceholder": "e.g. K1-1",
+  "cable.namePlaceholder": "e.g. C1-1",
   "cable.length": "Cable length [m]",
   "cable.allowedDrop": "Allowed voltage drop ε [%]",
-  "cable.allowedDropHint": "Leave empty to use the global ÁSZ value.",
-  "cable.allowedDropV": "Allowed reference voltage drop é [V]",
+  "cable.allowedDropHint":
+    "Leave empty to use the global utility-supply value.",
+  "cable.allowedDropV": "Allowed reference voltage drop ε [V]",
   "cable.skipDesignCurrentFactor": "Design current without safety factor",
   "cable.skipDesignCurrentFactorHint":
     "This cable uses the raw downstream device total, without the safety factor.",
-  "cable.resistivity": "AL resistivity Ω mm² / m",
+  "cable.resistivity": "Aluminium resistivity Ω mm² / m",
   "cable.crossSection": "Selected cable cross-section [mm²]",
   "cable.parallelCount": "Parallel",
   "cable.minCrossSection": "Required minimum cross-section [mm²]",
   "cable.recommendedCrossSection": "Recommended cable cross-section [mm²]",
   "cable.dropV": "Selected cable voltage drop ε [V]",
   "cable.dropPercent": "Selected cable voltage drop ε [%]",
-  "cable.impedance": "Calculated loop impedance (Rh) [Ω]",
-  "cable.iz": "Calculated short-circuit current (Iz) [A]",
+  "cable.impedance": "Calculated loop impedance [Ω]",
+  "cable.iz": "Calculated short-circuit current (Isc) [A]",
 
   // PDF export field visibility
   "pdf.fieldsTitle": "Displayed values",
@@ -300,7 +305,7 @@ const en: Record<TranslationKey, string> = {
   "unit.kmsz": "km",
   "unit.kmer": "km",
   "canvas.current": "Current",
-  "canvas.iz": "Iz",
+  "canvas.iz": "Isc",
   "canvas.allowedDropV": "Allowed drop",
   "canvas.minCrossSection": "Min. cross-sec.",
   "canvas.calculatedCrossSection": "Required min.",
@@ -325,30 +330,86 @@ export function translate(language: Language, key: TranslationKey): string {
   return translations[language][key] ?? hu[key] ?? key;
 }
 
+/**
+ * Replace a drawing abbreviation when it is not part of a longer word.
+ * Digits and punctuation stay (ESZ1-3 → FP1-3, FE1.1 → MD1.1); FEED is left
+ * alone because a letter follows.
+ */
+function replaceAbbrev(text: string, from: string, to: string): string {
+  const re = new RegExp(`(?<!\\p{L})${from}(?!\\p{L})`, "gu");
+  return text.replace(re, to);
+}
+
+/**
+ * Localize well-known Hungarian (and English) drawing abbreviations in a
+ * stored label or tag, without rewriting the saved project data.
+ * Custom text that is not one of these abbreviations is left untouched.
+ */
+export function localizeDiagramText(text: string, language: Language): string {
+  if (!text) return text;
+  if (text === "Új szekrény") {
+    return translate(language, "cabinet.defaultLabel");
+  }
+  if (language === "en") {
+    return replaceAbbrev(
+      replaceAbbrev(
+        replaceAbbrev(
+          replaceAbbrev(text, "ÁSZ", translate("en", "node.asz.name")),
+          "ESZ",
+          translate("en", "cabinet.defaultLabel"),
+        ),
+        "FM",
+        translate("en", "node.fm.name"),
+      ),
+      "FE",
+      translate("en", "node.fe.name"),
+    );
+  }
+  return replaceAbbrev(
+    replaceAbbrev(
+      replaceAbbrev(
+        replaceAbbrev(text, "US", translate("hu", "node.asz.name")),
+        "FP",
+        translate("hu", "cabinet.defaultLabel"),
+      ),
+      "MM",
+      translate("hu", "node.fm.name"),
+    ),
+    "MD",
+    translate("hu", "node.fe.name"),
+  );
+}
+
 /** Hook returning a `t(key)` function bound to the current language. */
 export function useT(): (key: TranslationKey) => string {
   const language = useSettingsStore((s) => s.language);
   return (key) => translate(language, key);
 }
 
+/** Hook that localizes stored drawing abbreviations for display. */
+export function useDiagramText(): (raw: string) => string {
+  const language = useSettingsStore((s) => s.language);
+  return (raw) => localizeDiagramText(raw, language);
+}
+
 /**
- * Localize a node's display name. Custom user labels are returned untouched;
- * only the well-known default labels (ÁSZ / FM / new cabinet) are translated so
- * switching language updates them live without rewriting stored data.
+ * Localize a node's display name. Stored labels stay as saved (usually the
+ * Hungarian defaults); only the well-known abbreviations (ÁSZ / FM / FE / ESZ
+ * and the new-cabinet placeholder) are rewritten for the active language.
  */
 export function useElementName(): (
   raw: string,
-  kind: "asz" | "fm" | "cabinet",
+  kind?: "asz" | "fm" | "fe" | "cabinet",
 ) => string {
   const language = useSettingsStore((s) => s.language);
   return (raw, kind) => {
-    if (kind === "asz" && raw === "ÁSZ")
-      return translate(language, "node.asz.name");
-    if (kind === "fm" && (raw === "FM" || raw === ""))
-      return translate(language, "node.fm.name");
-    if (kind === "cabinet" && raw === "Új szekrény")
-      return translate(language, "cabinet.defaultLabel");
-    return raw;
+    if (!raw) {
+      if (kind === "asz") return translate(language, "node.asz.name");
+      if (kind === "fm") return translate(language, "node.fm.name");
+      if (kind === "fe") return translate(language, "node.fe.name");
+      if (kind === "cabinet") return translate(language, "cabinet.defaultLabel");
+    }
+    return localizeDiagramText(raw, language);
   };
 }
 

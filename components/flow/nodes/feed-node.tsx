@@ -18,7 +18,7 @@ import { useMemo } from "react";
 const BOX_W = 52;
 const BOX_H = 22;
 
-/** FM feed point below ÁSZ — label avoids sides with wires. */
+/** Main-meter feed point below the utility supply; the label avoids sides with wires. */
 export function FeedNode({ id, data, selected }: NodeProps) {
   const elementName = useElementName();
   const d = data as FeedNodeData;

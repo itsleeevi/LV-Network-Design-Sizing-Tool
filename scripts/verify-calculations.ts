@@ -357,15 +357,16 @@ function verifyRackGraph() {
 
 /**
  * The recommendation has to be usable as a whole. Setting every cable to its
- * Javasolt must leave a network that is inside the limits, must not change the
- * advice (otherwise setting one cable invalidates what was suggested for the
- * others), and must keep every cable at least as thick as the cables it feeds.
+ * Recommended size must leave a network that is inside the limits, must not
+ * change the advice (otherwise setting one cable invalidates what was suggested
+ * for the others), and must keep every cable at least as thick as the cables
+ * it feeds.
  */
 function verifyRecommendations(
   label: string,
   build: () => { nodes: Node[]; edges: Edge[] },
 ) {
-  console.log(`\n=== Javasolt applied to the whole network: ${label} ===`);
+  console.log(`\n=== Recommended applied to the whole network: ${label} ===`);
 
   const { nodes, edges } = build();
   const first = runCalculations(nodes, edges);
@@ -394,13 +395,13 @@ function verifyRecommendations(
     const margin = limit - (d.cumulativeVoltageDropV ?? 0);
     if (margin < worstMargin) {
       worstMargin = margin;
-      worstLabel = `${d.label} ${(d.cumulativeVoltageDropV ?? 0).toFixed(2)} V vs é ${limit.toFixed(2)} V`;
+      worstLabel = `${d.label} ${(d.cumulativeVoltageDropV ?? 0).toFixed(2)} V vs limit ${limit.toFixed(2)} V`;
     }
   }
   const dropOk = worstMargin >= -1e-9;
   if (!dropOk) failures++;
   console.log(
-    `  [${dropOk ? "PASS" : "FAIL"}] every cabinet within é          tightest: ${worstLabel}`,
+    `  [${dropOk ? "PASS" : "FAIL"}] every cabinet within limit      tightest: ${worstLabel}`,
   );
 
   const drifted = second.edges.filter(
@@ -427,7 +428,7 @@ function verifyRecommendations(
   });
   if (ungraded.length > 0) failures++;
   console.log(
-    `  [${ungraded.length === 0 ? "PASS" : "FAIL"}] lépcsőzetesség holds            ${
+    `  [${ungraded.length === 0 ? "PASS" : "FAIL"}] grading holds                   ${
       ungraded.length === 0
         ? "no cable feeds a thicker one"
         : ungraded.map((e) => e.id).join(", ")
@@ -452,9 +453,10 @@ function main() {
   approx(k4.voltageDropPercent, 0.3863859, "voltage drop [%]");
   approx(k4.impedance, 0.29744, "loop impedance Rh [Ω]");
   approx(k4.shortCircuitCurrent, 773.2652, "short-circuit Iz [A]");
-  // Javasolt is solved for the whole network from lengths and currents alone,
-  // so it does not depend on the installed 25 mm². ESZ4's Fesz. esés has to
-  // fit under é across K3 + K4 together: K3 35 mm² (3.40 V) + K4 16 mm²
+  // Recommended is solved for the whole network from lengths and currents alone,
+  // so it does not depend on the installed 25 mm². ESZ4's voltage drop has to
+  // fit under the allowed reference drop across K3 + K4 together: K3 35 mm²
+  // (3.40 V) + K4 16 mm²
   // (2.41 V) = 5.81 V. Dropping either cable one size busts it (K4 at 10 mm²
   // gives 7.26 V, K3 at 25 mm² gives 7.17 V).
   approx(k4.recommendedCrossSection, 16, "recommended cross-section [mm²]");
@@ -468,13 +470,13 @@ function main() {
   approx(k3.impedance, 0.4576, "loop impedance Rh [Ω]");
   approx(k3.shortCircuitCurrent, 502.62238, "short-circuit Iz [A]");
   approx(k3.recommendedCrossSection, 35, "recommended cross-section [mm²]");
-  // Lépcsőzetesség: the trunk is never thinner than the cable it feeds.
+  // Grading: the trunk is never thinner than the cable it feeds.
   {
     const ok =
       (k3.recommendedCrossSection ?? 0) >= (k4.recommendedCrossSection ?? 0);
     if (!ok) failures++;
     console.log(
-      `  [${ok ? "PASS" : "FAIL"}] K3 >= K4 (lépcsőzetesség)          ${k3.recommendedCrossSection} mm² >= ${k4.recommendedCrossSection} mm²`,
+      `  [${ok ? "PASS" : "FAIL"}] K3 >= K4 (grading)                   ${k3.recommendedCrossSection} mm² >= ${k4.recommendedCrossSection} mm²`,
     );
   }
 

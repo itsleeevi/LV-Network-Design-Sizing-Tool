@@ -57,6 +57,7 @@ export function LegendSheet() {
           <LegendSection title={t("legend.elements")}>
             <LegendRow abbr={abbr("node.asz.name")} meaning={t("legend.asz")} />
             <LegendRow abbr={abbr("node.fm.name")} meaning={t("legend.fm")} />
+            <LegendRow abbr={abbr("node.fe.name")} meaning={t("legend.fe")} />
             <LegendRow abbr={abbr("cabinet.defaultLabel")} meaning={t("legend.esz")} />
           </LegendSection>
 
@@ -66,7 +67,7 @@ export function LegendSheet() {
           </LegendSection>
 
           <LegendSection title={t("legend.values")}>
-            <LegendRow abbr="Iz" meaning={t("legend.iz")} />
+            <LegendRow abbr={t("canvas.iz")} meaning={t("legend.iz")} />
             <LegendRow abbr={t("calc.loopImpedance")} meaning={t("legend.loop")} />
             <LegendRow abbr={t("calc.voltageDrop")} meaning={t("legend.drop")} />
           </LegendSection>

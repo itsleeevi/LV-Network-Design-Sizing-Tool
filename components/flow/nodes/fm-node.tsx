@@ -11,7 +11,7 @@ import { useMemo } from "react";
 const BOX_W = 52;
 const BOX_H = 22;
 
-/** FM (Főmérő - Main Meter) node */
+/** Main meter (FM) node. */
 export function FmNode({ id, data, selected }: NodeProps) {
   const t = useT();
   const sideLabel = useSideLabel();
