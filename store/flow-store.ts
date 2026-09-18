@@ -18,6 +18,9 @@ import { autoLayoutSchematic } from "@/lib/auto-layout";
 
 export type CanvasMode = "move" | "wire";
 
+/** Element the user picked from the toolbar and is about to click onto the canvas. */
+export type PendingPlacement = "cabinet";
+
 export const ASZ_ROOT_ID = "asz-root";
 export const FEED_ROOT_ID = "feed-root";
 const EDGE_ASZ_FEED_ID = "edge-asz-feed";
@@ -59,6 +62,7 @@ type FlowStore = {
   canvasMode: CanvasMode;
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
+  pendingPlacement: PendingPlacement | null;
 
   setNodes: (nodes: Node[]) => void;
   setEdges: (edges: Edge[]) => void;
@@ -66,7 +70,11 @@ type FlowStore = {
   setSelectedNodeId: (id: string | null) => void;
   setSelectedEdgeId: (id: string | null) => void;
 
-  addCabinet: () => void;
+  startPlacement: (kind: PendingPlacement) => void;
+  cancelPlacement: () => void;
+
+  /** Adds a cabinet at `position`, or in the next free slot of the old fixed row. */
+  addCabinet: (position?: { x: number; y: number }) => void;
   addFm: () => void;
   addFe: () => void;
   connectNodes: (connection: Connection) => void;
@@ -102,24 +110,28 @@ export const useFlowStore = create<FlowStore>()(
   canvasMode: "move",
   selectedNodeId: null,
   selectedEdgeId: null,
+  pendingPlacement: null,
   hasHydrated: false,
   welcomeDismissed: false,
 
-  setCanvasMode: (mode) => set({ canvasMode: mode }),
+  setCanvasMode: (mode) => set({ canvasMode: mode, pendingPlacement: null }),
   setSelectedNodeId: (id) => set({ selectedNodeId: id, selectedEdgeId: null }),
   setSelectedEdgeId: (id) => set({ selectedEdgeId: id, selectedNodeId: null }),
 
   setNodes: (nodes) => set({ nodes }),
   setEdges: (edges) => set({ edges }),
 
-  addCabinet: () => {
+  startPlacement: (kind) => set({ pendingPlacement: kind }),
+  cancelPlacement: () => set({ pendingPlacement: null }),
+
+  addCabinet: (position) => {
     const nodes = get().nodes;
     const cabinetCount = nodes.filter((n) => n.type === "cabinet").length;
 
     const newNode: Node = {
       id: crypto.randomUUID(),
       type: "cabinet",
-      position: {
+      position: position ?? {
         x: 80 + cabinetCount * 240,
         y: 368,
       },
@@ -234,6 +246,7 @@ export const useFlowStore = create<FlowStore>()(
       edges,
       selectedNodeId: null,
       selectedEdgeId: null,
+      pendingPlacement: null,
     });
   },
 
@@ -244,6 +257,7 @@ export const useFlowStore = create<FlowStore>()(
       canvasMode: "move",
       selectedNodeId: null,
       selectedEdgeId: null,
+      pendingPlacement: null,
     }),
 
   setHasHydrated: (value) => set({ hasHydrated: value }),

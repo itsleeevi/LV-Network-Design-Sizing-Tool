@@ -11,14 +11,17 @@ export function ToolbarPanel() {
   const { fitView } = useReactFlow();
   const {
     canvasMode,
+    pendingPlacement,
     setCanvasMode,
-    addCabinet,
+    startPlacement,
+    cancelPlacement,
     runCalculations,
     autoLayout,
   } = useFlowStore();
 
   const isMoveMode = canvasMode === "move";
   const isWireMode = canvasMode === "wire";
+  const isPlacingCabinet = pendingPlacement === "cabinet";
 
   const handleAutoLayout = () => {
     autoLayout();
@@ -57,7 +60,16 @@ export function ToolbarPanel() {
       {/* Add elements */}
       <div className="flex flex-col gap-1 rounded-lg border bg-background p-2 shadow-sm">
         <span className="mb-1 text-xs font-medium text-muted-foreground">{t("toolbar.addElement")}</span>
-        <Button type="button" size="sm" variant="outline" onClick={addCabinet} className="justify-start gap-1.5">
+        <Button
+          type="button"
+          size="sm"
+          variant={isPlacingCabinet ? "default" : "outline"}
+          onClick={() =>
+            isPlacingCabinet ? cancelPlacement() : startPlacement("cabinet")
+          }
+          title={t("placement.hintCabinet")}
+          className="justify-start gap-1.5"
+        >
           <Plus className="h-3 w-3" />
           {t("toolbar.addCabinet")}
         </Button>

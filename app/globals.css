@@ -338,3 +338,17 @@
   border-color: #15803d !important;
   box-shadow: 0 0 8px rgba(34, 197, 94, 0.7) !important;
 }
+
+/* ===========================================
+   PLACE MODE: Click the canvas to drop a new element
+   =========================================== */
+
+.rf-mode-place .react-flow__pane,
+.rf-mode-place .react-flow__node,
+.rf-mode-place .react-flow__edge {
+  cursor: crosshair !important;
+}
+
+.rf-mode-place .react-flow__panel {
+  cursor: default;
+}

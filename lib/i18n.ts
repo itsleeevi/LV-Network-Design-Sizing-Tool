@@ -9,6 +9,13 @@ const hu = {
   "toolbar.calculate": "Számítás",
   "toolbar.autoLayout": "Rendezés",
 
+  // Elem elhelyezése kattintással
+  "placement.hintCabinet": "Kattintson a rajzra a szekrény elhelyezéséhez.",
+  "placement.blocked": "Itt már van elem, válasszon szabad helyet.",
+  "placement.hintKeys":
+    "Shift + kattintás: több elhelyezése • Esc vagy jobb klikk: mégse",
+  "placement.cancel": "Mégse",
+
   // Menu
   "menu.new": "Új",
   "menu.open": "Megnyitás",
@@ -168,6 +175,13 @@ const en: Record<TranslationKey, string> = {
   "toolbar.addCabinet": "Feeder Pillar (FP)",
   "toolbar.calculate": "Calculate",
   "toolbar.autoLayout": "Auto-layout",
+
+  // Click-to-place
+  "placement.hintCabinet": "Click the drawing to place the feeder pillar.",
+  "placement.blocked": "Something is already here, pick a free spot.",
+  "placement.hintKeys":
+    "Shift-click to place several • Esc or right-click to cancel",
+  "placement.cancel": "Cancel",
 
   // Menu
   "menu.new": "New",

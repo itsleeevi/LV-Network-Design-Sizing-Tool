@@ -24,6 +24,7 @@ import { WireEdge } from "../edges/wire-edge";
 import { NodeInternalsSync } from "./node-internals-sync";
 import { ToolbarPanel } from "./toolbar-panel";
 import { MenuPanel } from "./menu-panel";
+import { PlacementLayer } from "./placement-layer";
 import { WelcomeScreen } from "./welcome-screen";
 import { PropertySidebar } from "../sidebar/property-sidebar";
 import { cn } from "@/lib/utils";
@@ -54,6 +55,7 @@ export function FlowCanvas() {
     nodes,
     edges,
     canvasMode,
+    pendingPlacement,
     setNodes,
     setEdges,
     connectNodes,
@@ -63,6 +65,7 @@ export function FlowCanvas() {
 
   const isMoveMode = canvasMode === "move";
   const isWireMode = canvasMode === "wire";
+  const isPlacing = pendingPlacement !== null;
 
   const language = useSettingsStore((s) => s.language);
 
@@ -125,6 +128,7 @@ export function FlowCanvas() {
           "flex-1 font-sans",
           isMoveMode && "rf-mode-move",
           isWireMode && "rf-mode-wire",
+          isPlacing && "rf-mode-place",
         )}
       >
         <ReactFlow
@@ -142,10 +146,10 @@ export function FlowCanvas() {
           connectionRadius={56}
           autoPanOnConnect
           selectNodesOnDrag={false}
-          nodesDraggable={isMoveMode}
-          nodesConnectable={isWireMode}
+          nodesDraggable={isMoveMode && !isPlacing}
+          nodesConnectable={isWireMode && !isPlacing}
           connectOnClick={false}
-          elementsSelectable
+          elementsSelectable={!isPlacing}
           panOnDrag
           fitView
         >
@@ -155,6 +159,7 @@ export function FlowCanvas() {
           <Panel position="top-right" className="m-3!">
             <MenuPanel />
           </Panel>
+          <PlacementLayer />
           <WelcomeScreen />
           <NodeInternalsSync />
           <Background />
