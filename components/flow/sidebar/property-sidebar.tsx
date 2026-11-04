@@ -16,8 +16,6 @@ import {
   FmNodeData,
   FeNodeData,
   CableEdgeData,
-  CablePdfFieldKey,
-  CABLE_PDF_FIELD_DEFAULTS,
   CabinetDisplayFieldKey,
   CABINET_DISPLAY_FIELD_DEFAULTS,
   AszNodeData,
@@ -614,24 +612,6 @@ function CableProperties({
     | undefined;
   const globalAllowedDrop = aszData?.allowedVoltageDrop ?? 4;
 
-  const pdfFieldOptions: { key: CablePdfFieldKey; label: string }[] = [
-    { key: "name", label: t("cable.name") },
-    { key: "dimensions", label: t("pdf.fieldDimensions") },
-    { key: "current", label: t("calc.totalCurrent") },
-    { key: "allowedVoltageDropV", label: t("cable.allowedDropV") },
-    { key: "recommendedCrossSection", label: t("cable.recommendedCrossSection") },
-    { key: "voltageDropV", label: t("cable.dropV") },
-    { key: "voltageDropPercent", label: t("cable.dropPercent") },
-    { key: "impedance", label: t("cable.impedance") },
-    { key: "shortCircuit", label: t("cable.iz") },
-  ];
-
-  const togglePdfField = (key: CablePdfFieldKey, checked: boolean) => {
-    updateEdgeData(edgeId, {
-      pdfFields: { ...data.pdfFields, [key]: checked },
-    });
-  };
-
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
@@ -842,31 +822,6 @@ function CableProperties({
             )}
         </div>
       )}
-
-      <div className="space-y-2 rounded-md border p-2">
-        <div>
-          <h4 className="text-xs font-medium text-foreground">
-            {t("pdf.fieldsTitle")}
-          </h4>
-          <p className="text-xs text-muted-foreground">{t("pdf.fieldsHint")}</p>
-        </div>
-        <div className="space-y-1.5">
-          {pdfFieldOptions.map(({ key, label }) => (
-            <label
-              key={key}
-              className="flex cursor-pointer items-center gap-2 text-sm"
-            >
-              <input
-                type="checkbox"
-                className="h-4 w-4 cursor-pointer accent-blue-600"
-                checked={data.pdfFields?.[key] ?? CABLE_PDF_FIELD_DEFAULTS[key]}
-                onChange={(e) => togglePdfField(key, e.target.checked)}
-              />
-              <span>{label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

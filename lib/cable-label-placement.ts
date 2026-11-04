@@ -2,7 +2,11 @@ import type { Edge, Node } from "@xyflow/react";
 import type { CableEdgeData } from "@/types/electrical";
 import { BOX_H, BOX_W } from "@/components/flow/nodes/diagonal-cabinet-symbol";
 import { getNodeLabelSides } from "@/lib/cabinet-label-placement";
-import { estimateCableLabelSize, getCableLabelLines } from "@/lib/cable-label";
+import {
+  estimateCableLabelSize,
+  getCableLabelLines,
+  resolveCablePdfFields,
+} from "@/lib/cable-label";
 import { translate } from "@/lib/i18n";
 import type { Language } from "@/store/settings-store";
 
@@ -127,10 +131,12 @@ function solveCableLabelPlacements(
   edges: Edge[],
   language: Language,
 ): Map<string, CableLabelPlacement> {
+  const fields = resolveCablePdfFields(nodes);
   const labelSize = (edge: Edge): Size =>
     estimateCableLabelSize(
       getCableLabelLines(
         edge.data as CableEdgeData | undefined,
+        fields,
         (key) => translate(language, key),
         language,
       ),

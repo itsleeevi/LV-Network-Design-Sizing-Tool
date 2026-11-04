@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Move, Cable, Plus, Calculator, AlignHorizontalDistributeCenter } from "lucide-react";
 import { useFlowStore } from "@/store/flow-store";
 import { useT } from "@/lib/i18n";
+import { CableFieldsPanel } from "./cable-fields-panel";
 
 export function ToolbarPanel() {
   const t = useT();
@@ -86,6 +87,8 @@ export function ToolbarPanel() {
         <AlignHorizontalDistributeCenter className="h-4 w-4" />
         {t("toolbar.autoLayout")}
       </Button>
+
+      <CableFieldsPanel />
     </div>
   );
 }

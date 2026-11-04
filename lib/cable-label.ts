@@ -1,10 +1,29 @@
-import type { CableEdgeData, CablePdfFieldKey } from "@/types/electrical";
+import type { Node } from "@xyflow/react";
+import type {
+  AszNodeData,
+  CableEdgeData,
+  CablePdfFieldKey,
+} from "@/types/electrical";
 import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
 import type { TranslationKey } from "@/lib/i18n";
 import { formatCalc, formatNumber, formatStandardSize } from "@/lib/utils";
 import type { Language } from "@/store/settings-store";
 
 export type Translate = (key: TranslationKey) => string;
+
+/**
+ * The diagram-wide choice of which lines every cable's info box shows, kept
+ * on the utility-supply node so it is saved with the project. Unset flags fall
+ * back to CABLE_PDF_FIELD_DEFAULTS.
+ */
+export function resolveCablePdfFields(
+  nodes: Node[],
+): Record<CablePdfFieldKey, boolean> {
+  const asz = nodes.find((n) => n.type === "asz")?.data as
+    | AszNodeData
+    | undefined;
+  return { ...CABLE_PDF_FIELD_DEFAULTS, ...asz?.cablePdfFields };
+}
 
 /** One rendered line of a cable's on-canvas info box. */
 export type CableLabelLine = {
@@ -20,18 +39,18 @@ export type CableLabelLine = {
  * for both the rendered label (wire-edge) and the label-size estimate the
  * collision-avoiding placement pass needs, so the two can never drift apart.
  *
- * Every line is opt-in per cable via `pdfFields`, falling back to
- * CABLE_PDF_FIELD_DEFAULTS when untouched.
+ * Which lines are shown is one setting for every cable at once (see
+ * resolveCablePdfFields).
  */
 export function getCableLabelLines(
   data: CableEdgeData | undefined,
+  fields: Record<CablePdfFieldKey, boolean>,
   t: Translate,
   language: Language,
 ): CableLabelLine[] {
   if (!data || !(data.length > 0)) return [];
 
-  const show = (key: CablePdfFieldKey) =>
-    data.pdfFields?.[key] ?? CABLE_PDF_FIELD_DEFAULTS[key];
+  const show = (key: CablePdfFieldKey) => fields[key];
 
   const lines: CableLabelLine[] = [];
   const calc = "font-medium text-blue-600";

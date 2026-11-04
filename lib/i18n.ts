@@ -145,6 +145,8 @@ const hu = {
   "pdf.fieldsHint":
     "A bejelölt sorok a rajzon és a PDF exportban is megjelennek.",
   "pdf.fieldDimensions": "Méret (hossz · mm²)",
+  "pdf.cableFieldsTitle": "Kábel adatok",
+  "pdf.cableFieldsHint": "Minden kábelen, a PDF-ben is.",
 
   // Units / canvas labels
   "unit.side": "oldal",
@@ -312,6 +314,8 @@ const en: Record<TranslationKey, string> = {
   "pdf.fieldsTitle": "Displayed values",
   "pdf.fieldsHint": "Ticked lines appear on the diagram and in the PDF export.",
   "pdf.fieldDimensions": "Size (length · mm²)",
+  "pdf.cableFieldsTitle": "Cable values",
+  "pdf.cableFieldsHint": "On every cable, PDF included.",
 
   // Units / canvas labels
   "unit.side": "side",

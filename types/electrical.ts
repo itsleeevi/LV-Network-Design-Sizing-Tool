@@ -25,11 +25,11 @@ export type CabinetNodeData = {
   loopImpedance?: number;
   /** Short-circuit current at this point [A] */
   shortCircuitCurrent?: number;
-  /** Cumulative voltage drop to this point [%] */
+  /** Cumulative voltage drop to this point as a share of the allowed drop é [%] (cumulativeVoltageDropV / é × 100) */
   cumulativeVoltageDrop?: number;
   /** Cumulative voltage drop to this point [V] */
   cumulativeVoltageDropV?: number;
-  /** Allowed cumulative voltage drop [%] (the ÁSZ node's global ε), for display alongside cumulativeVoltageDrop. */
+  /** Allowed cumulative voltage drop on the cumulativeVoltageDrop scale [%]: always 100 (all of é used). */
   cumulativeVoltageDropLimit?: number;
   /**
    * Suggested maximum fuse rating at this point [A] (Excel summary block
@@ -91,6 +91,12 @@ export type AszNodeData = {
    * soil / grouping are not modelled).
    */
   maxCurrentDensity?: number;
+  /**
+   * Which detail lines every cable shows, both on the canvas label and in the
+   * PDF export. One setting for the whole diagram; a missing flag falls back
+   * to CABLE_PDF_FIELD_DEFAULTS.
+   */
+  cablePdfFields?: Partial<Record<CablePdfFieldKey, boolean>>;
 };
 
 /** Safety factor applied to raw device totals in design-current mode. */
@@ -150,11 +156,6 @@ export type CableEdgeData = {
    * When undefined, the global value from the ÁSZ node is used.
    */
   allowedVoltageDropPercent?: number;
-  /**
-   * Which detail lines are shown for this cable, both on the canvas label and
-   * in the PDF export. A missing flag falls back to CABLE_PDF_FIELD_DEFAULTS.
-   */
-  pdfFields?: Partial<Record<CablePdfFieldKey, boolean>>;
   /**
    * When the ÁSZ node's design-current mode is on, this cable still carries
    * the raw downstream device total instead of being scaled by the safety
@@ -229,7 +230,7 @@ export type CablePdfFieldKey =
 
 /**
  * Whether each value is shown by default (on the canvas and in the PDF). All
- * values start hidden; enable the ones you want per cable.
+ * values start hidden; enable the ones you want for all cables at once.
  */
 export const CABLE_PDF_FIELD_DEFAULTS: Record<CablePdfFieldKey, boolean> = {
   name: false,
