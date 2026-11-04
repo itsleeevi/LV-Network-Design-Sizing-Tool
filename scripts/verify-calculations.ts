@@ -52,6 +52,14 @@
  */
 import type { Node, Edge } from "@xyflow/react";
 import { runCalculations } from "@/lib/calculations";
+
+// Cabinet cumulativeVoltageDrop is the share of é used (ΔU [V] / é × 100), a
+// deliberate departure from the Excel "Fesz esés összesen" column (ΔU / U).
+// Both reference networks are 3F, 400 V, ε = 4 %: é = 0.75 × 400 × 0.04 / √3.
+const E_ALLOWED_V = (0.75 * 400 * 0.04) / Math.sqrt(3);
+// Excel ΔU% (of 400 V) converted to the share-of-é scale.
+const excelPercentToShareOfE = (percent: number) =>
+  ((percent / 100) * 400 / E_ALLOWED_V) * 100;
 import type {
   CableEdgeData,
   CabinetNodeData,
@@ -313,7 +321,11 @@ function verifyRackGraph() {
   ];
   for (const [label, segments] of percentCases) {
     const percent = segments.reduce((sum, p) => sum + p, 0);
-    approx(node(label).cumulativeVoltageDrop, percent, `${label} ΔU [%]`);
+    approx(
+      node(label).cumulativeVoltageDrop,
+      excelPercentToShareOfE(percent),
+      `${label} ΔU [% of é]`,
+    );
   }
 
   console.log(
@@ -494,8 +506,8 @@ function main() {
   // cumulative ΔU% = K3% + K4% (the "Fesz esés összesen" total column)
   approx(
     esz4.cumulativeVoltageDrop,
-    1.1888797 + 0.3863859,
-    "cumulative ΔU [%]",
+    excelPercentToShareOfE(1.1888797 + 0.3863859),
+    "cumulative ΔU [% of é]",
   );
   approx(
     esz4.cumulativeVoltageDropV,
@@ -509,7 +521,11 @@ function main() {
   approx(esz3.totalCurrent, 12, "total current [A]");
   approx(esz3.loopImpedance, 0.4576, "loop impedance Rh [Ω]");
   approx(esz3.shortCircuitCurrent, 502.62238, "short-circuit Iz [A]");
-  approx(esz3.cumulativeVoltageDrop, 1.1888797, "cumulative ΔU [%]");
+  approx(
+    esz3.cumulativeVoltageDrop,
+    excelPercentToShareOfE(1.1888797),
+    "cumulative ΔU [% of é]",
+  );
   approx(esz3.cumulativeVoltageDropV, 4.7555187, "cumulative ΔU [V]");
 
   // Parallel runs (n×A): same segment as K4 but 2×25 mm² must halve ΔU and Rh.

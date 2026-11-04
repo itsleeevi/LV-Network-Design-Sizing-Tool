@@ -637,8 +637,12 @@ export function runCalculations(
     // values stay on the edges (the Q/R columns of the cable rows).
     const loopImpedance = cumulativeImpedance.get(node.id) ?? 0;
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
-    const voltageDrop = cumulativeVoltageDrop.get(node.id) || 0;
     const voltageDropV = cumulativeVoltageDropV.get(node.id) || 0;
+    // Shown as the share of the allowed drop é already used on the path from
+    // the source (e.g. 3.63 V / 6.93 V = 52 %). Deliberately not the Excel
+    // "Fesz esés összesen" column (ΔU / U); that per-cable sum is still used
+    // internally by the recommendation pass.
+    const voltageDrop = allowedDropV > 0 ? (voltageDropV / allowedDropV) * 100 : 0;
     const maxFuseRating = calculateMaxFuseRating(shortCircuitCurrent);
 
     return {
@@ -651,7 +655,7 @@ export function runCalculations(
         shortCircuitCurrent,
         cumulativeVoltageDrop: voltageDrop,
         cumulativeVoltageDropV: voltageDropV,
-        cumulativeVoltageDropLimit: allowedDropPercent,
+        cumulativeVoltageDropLimit: 100,
         maxFuseRating,
       },
     };
