@@ -10,8 +10,8 @@ const hu = {
   "toolbar.autoLayout": "Rendezés",
 
   // Elem elhelyezése kattintással
-  "placement.hintCabinet": "Kattintson a rajzra a szekrény elhelyezéséhez.",
-  "placement.blocked": "Itt már van elem, válasszon szabad helyet.",
+  "placement.hintCabinet": "Kattints a rajzra a szekrény elhelyezéséhez.",
+  "placement.blocked": "Itt már van elem, válassz szabad helyet.",
   "placement.hintKeys":
     "Shift + kattintás: több elhelyezése • Esc vagy jobb klikk: mégse",
   "placement.cancel": "Mégse",
