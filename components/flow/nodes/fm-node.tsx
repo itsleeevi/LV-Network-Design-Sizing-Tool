@@ -7,12 +7,15 @@ import { getConnectedSides } from "@/lib/cabinet-label-placement";
 import { useT, useSideLabel, useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { useIsNodeSelected } from "./use-is-node-selected";
+import { SelectionFrame } from "./selection-frame";
 
 const BOX_W = 52;
 const BOX_H = 22;
 
 /** Main meter (FM) node. */
 export function FmNode({ id, data, selected }: NodeProps) {
+  const isSelected = useIsNodeSelected(id, selected);
   const t = useT();
   const sideLabel = useSideLabel();
   const elementName = useElementName();
@@ -39,11 +42,11 @@ export function FmNode({ id, data, selected }: NodeProps) {
         "relative flex items-center justify-center border bg-white font-sans",
         "border-black",
         wireMode && "ring-1 ring-blue-400/60",
-        selected && "ring-2 ring-blue-500",
       )}
       style={{ width: BOX_W, height: BOX_H }}
       onClick={handleClick}
     >
+      <SelectionFrame active={isSelected} />
       {/* Label above */}
       <div className="pointer-events-none absolute bottom-full left-1/2 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-white px-1 text-center text-xs font-medium leading-none text-red-600">
         {elementName(d.label, "fm")}

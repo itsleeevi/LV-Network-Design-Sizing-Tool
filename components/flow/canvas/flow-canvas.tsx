@@ -116,6 +116,37 @@ export function FlowCanvas() {
     [setSelectedEdgeId],
   );
 
+  // Delete / Backspace removes whatever the sidebar is showing, the same as
+  // its trash button. React Flow's own delete key is off because it acts on
+  // its internal selection, which can differ from the store's. The utility
+  // supply has no delete button, so the key leaves it alone too.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Delete" && event.key !== "Backspace") return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.isContentEditable ||
+          ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))
+      ) {
+        return;
+      }
+      const { selectedNodeId, selectedEdgeId, nodes, deleteNode, deleteEdge } =
+        useFlowStore.getState();
+      if (selectedEdgeId) {
+        event.preventDefault();
+        deleteEdge(selectedEdgeId);
+      } else if (selectedNodeId) {
+        const node = nodes.find((n) => n.id === selectedNodeId);
+        if (!node || node.type === "asz") return;
+        event.preventDefault();
+        deleteNode(selectedNodeId);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const onPaneClick = useCallback(() => {
     setSelectedNodeId(null);
     setSelectedEdgeId(null);
@@ -150,6 +181,7 @@ export function FlowCanvas() {
           nodesConnectable={isWireMode && !isPlacing}
           connectOnClick={false}
           elementsSelectable={!isPlacing}
+          deleteKeyCode={null}
           panOnDrag
           fitView
         >

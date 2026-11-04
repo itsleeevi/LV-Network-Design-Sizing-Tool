@@ -255,6 +255,19 @@ export function WireEdge({
 
   return (
     <>
+      {/* Selection halo behind the cable */}
+      {isSelected && (
+        <path
+          d={pathD}
+          fill="none"
+          stroke="#3b82f6"
+          strokeOpacity={0.25}
+          strokeWidth={10}
+          strokeLinecap="round"
+          pointerEvents="none"
+        />
+      )}
+
       {/* Main cable path */}
       <path
         d={pathD}

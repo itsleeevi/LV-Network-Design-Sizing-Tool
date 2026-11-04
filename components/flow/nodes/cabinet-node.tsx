@@ -28,6 +28,8 @@ import {
 import { useT, useSideLabel, useElementName, useDiagramText } from "@/lib/i18n";
 import { useSettingsStore } from "@/store/settings-store";
 import { cn, formatCalc, formatLocaleNumber, formatNumber } from "@/lib/utils";
+import { useIsNodeSelected } from "./use-is-node-selected";
+import { SelectionFrame } from "./selection-frame";
 
 function SideHandle({
   position,
@@ -205,6 +207,7 @@ function CabinetInfo({
 }
 
 export function CabinetNode({ id, data, selected }: NodeProps) {
+  const isSelected = useIsNodeSelected(id, selected);
   const elementName = useElementName();
   const d = data as CabinetNodeData;
   const displayLabel = elementName(d.label, "cabinet");
@@ -281,11 +284,11 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
       className={cn(
         "relative overflow-visible font-sans",
         wireMode && "ring-1 ring-blue-400/60",
-        selected && "ring-2 ring-blue-500 ring-offset-1",
       )}
       style={{ width: BOX_W, height: BOX_H }}
       onClick={handleClick}
     >
+      <SelectionFrame active={isSelected} />
       <DiagonalCabinetSymbol
         wireMode={wireMode}
         connectedSides={connectedSides}

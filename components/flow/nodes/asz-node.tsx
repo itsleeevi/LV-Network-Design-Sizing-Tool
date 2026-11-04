@@ -14,12 +14,15 @@ import { SchematicBoxPorts } from "./schematic-box-ports";
 import { useElementName } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { useIsNodeSelected } from "./use-is-node-selected";
+import { SelectionFrame } from "./selection-frame";
 
 const BOX_W = 52;
 const BOX_H = 22;
 
 /** Utility supply (ÁSZ): horizontal box with two overlapping circles (transformer symbol). */
 export function AszNode({ id, data, selected }: NodeProps) {
+  const isSelected = useIsNodeSelected(id, selected);
   const elementName = useElementName();
   const d = data as AszNodeData;
   const canvasMode = useFlowStore((s) => s.canvasMode);
@@ -54,11 +57,11 @@ export function AszNode({ id, data, selected }: NodeProps) {
         "relative overflow-visible flex items-center justify-center border bg-white font-sans",
         "border-black",
         wireMode && "ring-1 ring-blue-400/60",
-        selected && "ring-2 ring-blue-500 ring-offset-1",
       )}
       style={{ width: BOX_W, height: BOX_H }}
       onClick={handleClick}
     >
+      <SelectionFrame active={isSelected} />
       <div
         className={cn(
           "pointer-events-none absolute z-10 w-max whitespace-nowrap rounded bg-white px-1 text-xs font-medium leading-none text-red-600",
