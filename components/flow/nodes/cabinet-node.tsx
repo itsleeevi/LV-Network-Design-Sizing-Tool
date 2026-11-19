@@ -27,6 +27,11 @@ import {
 } from "@/lib/downstream";
 import { useT, useSideLabel, useElementName, useDiagramText } from "@/lib/i18n";
 import { useSettingsStore } from "@/store/settings-store";
+import {
+  calcStepLines,
+  explainNetwork,
+  type CalcExplanation,
+} from "@/lib/calc-explain";
 import { cn, formatCalc, formatLocaleNumber, formatNumber } from "@/lib/utils";
 import { useIsNodeSelected } from "./use-is-node-selected";
 import { SelectionFrame } from "./selection-frame";
@@ -96,18 +101,36 @@ function CabinetRenameField({
   );
 }
 
+/** Calculation-step lines written under one value (Calculation steps toggle). */
+function CalcSteps({
+  explanation,
+  stepKeys,
+}: {
+  explanation: CalcExplanation | undefined;
+  stepKeys: readonly string[];
+}) {
+  if (!explanation || explanation.stale) return null;
+  return calcStepLines(explanation, stepKeys).map((line) => (
+    <div key={line.key} className="text-slate-500" title={line.title}>
+      {line.text}
+    </div>
+  ));
+}
+
 /** Multi-line cabinet info display */
 function CabinetInfo({
   data,
   displayLabel,
   tag,
   placement,
+  explanation,
   onStartEdit,
 }: {
   data: CabinetNodeData;
   displayLabel: string;
   tag: string;
   placement: LabelPlacement;
+  explanation: CalcExplanation | undefined;
   onStartEdit: (event: React.MouseEvent) => void;
 }) {
   const t = useT();
@@ -188,6 +211,9 @@ function CabinetInfo({
             </div>
           );
         })()}
+      {show("voltageDrop") && data.cumulativeVoltageDropV ? (
+        <CalcSteps explanation={explanation} stepKeys={["dropV", "dropPercent"]} />
+      ) : null}
       {show("loopImpedance") &&
         data.loopImpedance !== undefined &&
         data.loopImpedance > 0 && (
@@ -195,6 +221,9 @@ function CabinetInfo({
             {t("calc.loopImpedance")}: {formatCalc(data.loopImpedance, language)} Ω
           </div>
         )}
+      {show("loopImpedance") && data.loopImpedance ? (
+        <CalcSteps explanation={explanation} stepKeys={["impedance"]} />
+      ) : null}
       {show("shortCircuit") &&
         data.shortCircuitCurrent !== undefined &&
         data.shortCircuitCurrent > 0 && (
@@ -202,6 +231,12 @@ function CabinetInfo({
             {t("calc.iz")}: {formatCalc(data.shortCircuitCurrent, language)}
           </div>
         )}
+      {show("shortCircuit") && data.shortCircuitCurrent ? (
+        <CalcSteps explanation={explanation} stepKeys={["isc"]} />
+      ) : null}
+      {explanation?.stale && (
+        <div className="text-amber-600">{t("explain.stale")}</div>
+      )}
     </div>
   );
 }
@@ -214,6 +249,11 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
   const nodes = useFlowStore((s) => s.nodes);
   const edges = useFlowStore((s) => s.edges);
   const canvasMode = useFlowStore((s) => s.canvasMode);
+  const language = useSettingsStore((s) => s.language);
+  const showCalcSteps = useSettingsStore((s) => s.showCalcSteps);
+  const explanation = showCalcSteps
+    ? explainNetwork(nodes, edges, language).get(id)
+    : undefined;
   const updateNodeData = useFlowStore((s) => s.updateNodeData);
   const setSelectedNodeId = useFlowStore((s) => s.setSelectedNodeId);
   const updateNodeInternals = useUpdateNodeInternals();
@@ -332,6 +372,7 @@ export function CabinetNode({ id, data, selected }: NodeProps) {
             displayLabel={displayLabel}
             tag={tag}
             placement={labelPlacement}
+            explanation={explanation}
             onStartEdit={startEdit}
           />
         </div>

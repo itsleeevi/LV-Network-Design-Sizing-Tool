@@ -62,7 +62,7 @@ export function effectiveCrossSection(
 }
 
 const SQRT3 = Math.sqrt(3);
-const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
+export const PHASE_VOLTAGE = 230; // V (phase-to-neutral), drives the short-circuit current
 const RHO = CABLE_RESISTIVITY;
 
 /**

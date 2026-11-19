@@ -6,6 +6,7 @@ import type {
 } from "@/types/electrical";
 import { CABLE_PDF_FIELD_DEFAULTS } from "@/types/electrical";
 import type { TranslationKey } from "@/lib/i18n";
+import { calcStepLines, type CalcExplanation } from "@/lib/calc-explain";
 import { formatCalc, formatNumber, formatStandardSize } from "@/lib/utils";
 import type { Language } from "@/store/settings-store";
 
@@ -32,7 +33,25 @@ export type CableLabelLine = {
   text: string;
   /** Tailwind classes for this line, on top of the box's own styling. */
   className: string;
+  /** Hover text, for calculation-step lines. */
+  title?: string;
 };
+
+/**
+ * Which calculation steps (see lib/calc-explain.ts) are written under each
+ * label line when the Calculation steps toggle is on.
+ */
+const CABLE_LINE_STEPS: Partial<Record<string, readonly string[]>> = {
+  dimensions: ["area"],
+  current: ["current"],
+  allowedVoltageDropV: ["allowed"],
+  voltageDropV: ["dropV"],
+  voltageDropPercent: ["dropPercent"],
+  impedance: ["impedance"],
+  shortCircuit: ["isc"],
+};
+
+const CALC_STEP_CLASS = "font-normal text-slate-500";
 
 /**
  * The lines a cable's info box shows, in display order. Single source of truth
@@ -47,6 +66,7 @@ export function getCableLabelLines(
   fields: Record<CablePdfFieldKey, boolean>,
   t: Translate,
   language: Language,
+  explanation?: CalcExplanation,
 ): CableLabelLine[] {
   if (!data || !(data.length > 0)) return [];
 
@@ -146,7 +166,19 @@ export function getCableLabelLines(
     });
   }
 
-  return lines;
+  if (!explanation) return lines;
+  if (explanation.stale) {
+    return [
+      ...lines,
+      { key: "calc-stale", text: t("explain.stale"), className: "text-amber-600" },
+    ];
+  }
+  return lines.flatMap((line) => [
+    line,
+    ...calcStepLines(explanation, CABLE_LINE_STEPS[line.key] ?? []).map(
+      (step) => ({ ...step, className: CALC_STEP_CLASS }),
+    ),
+  ]);
 }
 
 /** Font metrics of the info box (text-[9px] leading-tight, px-1.5 py-1). */

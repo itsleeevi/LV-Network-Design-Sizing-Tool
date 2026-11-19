@@ -97,6 +97,29 @@ const hu = {
   "calc.iz": "Iz [A]",
   "calc.maxFuse": "Bizt [A]",
 
+  // Számítás menete
+  "toolbar.calcSteps": "Számítás menete",
+  "toolbar.calcStepsHint":
+    "Be-/kikapcsolja, hogy a rajzon minden érték alatt megjelenjen, hogyan jön ki.",
+  "explain.stale": "Elavult értékek: nyomd meg a Számítás gombot",
+  "explain.downstreamTotal": "A kábel mögötti összes berendezés árama.",
+  "explain.designCurrent":
+    "Mértékadó áram: a mögöttes berendezések összárama × szorzó / fázisok száma.",
+  "explain.designCurrentSkipped":
+    "Ennél a kábelnél nincs mértékadó áram szorzó, a nyers összáram számít.",
+  "explain.parallelArea": "Párhuzamos kábelek együttes keresztmetszete [mm²]",
+  "explain.cableOverride": "A kábel saját ε értéke felülírja az ÁSZ globális értékét.",
+  "explain.totalCurrentNote":
+    "Saját áram + a mögöttes szekrények árama, mértékadó áram szorzó nélkül.",
+  "explain.path": "Útvonal",
+  "explain.sharePercentNote":
+    "A % azt mutatja, hogy a megengedett é feszültségesés hányad része fogyott el az ÁSZ-tól idáig (100% = határ).",
+  "explain.recommendedFormula": "Teljes hálózatra számolt szabványos méret",
+  "explain.recommendedNote":
+    "Minden kábel a hőterhelési alsó határról indul; amíg valamelyik szekrény ΣΔU értéke nagyobb é-nél, az útvonalon a legtöbb voltot nyerő kábel egy szabványos mérettel nő. Végül egy kábel sem vékonyabb az általa táplált kábeleknél.",
+  "explain.symIsc": "Iz",
+  "explain.symFuse": "Bizt",
+
   // ÁSZ
   "asz.title": "Áramszolgáltató (ÁSZ)",
   "asz.phaseMode": "Fázisszám",
@@ -265,6 +288,29 @@ const en: Record<TranslationKey, string> = {
   "calc.loopImpedance": "Loop imp.",
   "calc.iz": "Isc [A]",
   "calc.maxFuse": "Max fuse [A]",
+
+  // Calculation steps
+  "toolbar.calcSteps": "Calculation steps",
+  "toolbar.calcStepsHint":
+    "Turns on or off showing, under each value on the drawing, how it is calculated.",
+  "explain.stale": "Values out of date: press Calculate",
+  "explain.downstreamTotal": "Total current of every device downstream of this cable.",
+  "explain.designCurrent":
+    "Design current: downstream device total × safety factor / number of phases.",
+  "explain.designCurrentSkipped":
+    "This cable skips the design current factor and carries the raw total.",
+  "explain.parallelArea": "Combined cross-section of parallel runs [mm²]",
+  "explain.cableOverride": "This cable's own ε overrides the US global value.",
+  "explain.totalCurrentNote":
+    "Own current + downstream cabinets, without the design current factor.",
+  "explain.path": "Path",
+  "explain.sharePercentNote":
+    "The % is the share of the allowed drop é used from the US to here (100% = limit).",
+  "explain.recommendedFormula": "Standard size solved for the whole network",
+  "explain.recommendedNote":
+    "Every cable starts at the thermal floor; while any cabinet's ΣΔU exceeds é, the path cable that saves the most volts steps up one standard size. Finally no cable is thinner than a cable it feeds.",
+  "explain.symIsc": "Isc",
+  "explain.symFuse": "Max fuse",
 
   // Utility supply
   "asz.title": "Utility Supply (US)",

@@ -2,9 +2,10 @@
 
 import { useReactFlow } from "@xyflow/react";
 import { Button } from "@/components/ui/button";
-import { Move, Cable, Plus, Calculator, AlignHorizontalDistributeCenter } from "lucide-react";
+import { Move, Cable, Plus, Calculator, AlignHorizontalDistributeCenter, Sigma } from "lucide-react";
 import { useFlowStore } from "@/store/flow-store";
 import { useT } from "@/lib/i18n";
+import { useSettingsStore } from "@/store/settings-store";
 import { CableFieldsPanel } from "./cable-fields-panel";
 
 export function ToolbarPanel() {
@@ -19,6 +20,9 @@ export function ToolbarPanel() {
     runCalculations,
     autoLayout,
   } = useFlowStore();
+
+  const showCalcSteps = useSettingsStore((s) => s.showCalcSteps);
+  const setShowCalcSteps = useSettingsStore((s) => s.setShowCalcSteps);
 
   const isMoveMode = canvasMode === "move";
   const isWireMode = canvasMode === "wire";
@@ -80,6 +84,18 @@ export function ToolbarPanel() {
       <Button type="button" onClick={runCalculations} className="gap-1.5">
         <Calculator className="h-4 w-4" />
         {t("toolbar.calculate")}
+      </Button>
+
+      <Button
+        type="button"
+        variant={showCalcSteps ? "default" : "outline"}
+        aria-pressed={showCalcSteps}
+        onClick={() => setShowCalcSteps(!showCalcSteps)}
+        title={t("toolbar.calcStepsHint")}
+        className="gap-1.5"
+      >
+        <Sigma className="h-4 w-4" />
+        {t("toolbar.calcSteps")}
       </Button>
 
       {/* Auto-layout button */}

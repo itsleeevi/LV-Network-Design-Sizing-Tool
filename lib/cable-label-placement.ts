@@ -2,6 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import type { CableEdgeData } from "@/types/electrical";
 import { BOX_H, BOX_W } from "@/components/flow/nodes/diagonal-cabinet-symbol";
 import { getNodeLabelSides } from "@/lib/cabinet-label-placement";
+import { explainNetwork } from "@/lib/calc-explain";
 import {
   estimateCableLabelSize,
   getCableLabelLines,
@@ -130,8 +131,12 @@ function solveCableLabelPlacements(
   nodes: Node[],
   edges: Edge[],
   language: Language,
+  showCalcSteps: boolean,
 ): Map<string, CableLabelPlacement> {
   const fields = resolveCablePdfFields(nodes);
+  const explanations = showCalcSteps
+    ? explainNetwork(nodes, edges, language)
+    : undefined;
   const labelSize = (edge: Edge): Size =>
     estimateCableLabelSize(
       getCableLabelLines(
@@ -139,6 +144,7 @@ function solveCableLabelPlacements(
         fields,
         (key) => translate(language, key),
         language,
+        explanations?.get(edge.id),
       ),
     );
 
@@ -228,6 +234,7 @@ let cache:
       nodes: Node[];
       edges: Edge[];
       language: Language;
+      showCalcSteps: boolean;
       result: Map<string, CableLabelPlacement>;
     }
   | null = null;
@@ -236,17 +243,24 @@ export function computeCableLabelPlacements(
   nodes: Node[],
   edges: Edge[],
   language: Language,
+  showCalcSteps: boolean,
 ): Map<string, CableLabelPlacement> {
   if (
     cache &&
     cache.nodes === nodes &&
     cache.edges === edges &&
-    cache.language === language
+    cache.language === language &&
+    cache.showCalcSteps === showCalcSteps
   ) {
     return cache.result;
   }
 
-  const result = solveCableLabelPlacements(nodes, edges, language);
-  cache = { nodes, edges, language, result };
+  const result = solveCableLabelPlacements(
+    nodes,
+    edges,
+    language,
+    showCalcSteps,
+  );
+  cache = { nodes, edges, language, showCalcSteps, result };
   return result;
 }

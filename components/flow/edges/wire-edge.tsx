@@ -4,6 +4,7 @@ import { EdgeProps, EdgeLabelRenderer } from "@xyflow/react";
 import type { CableEdgeData } from "@/types/electrical";
 import { useFlowStore } from "@/store/flow-store";
 import { getCableLabelLines, resolveCablePdfFields } from "@/lib/cable-label";
+import { explainNetwork } from "@/lib/calc-explain";
 import {
   computeCableLabelPlacements,
   CABLE_LABEL_GAP_X,
@@ -190,13 +191,20 @@ export function WireEdge({
 
   const language = useSettingsStore((s) => s.language);
   const cablePdfFields = useMemo(() => resolveCablePdfFields(nodes), [nodes]);
-  const labelLines = getCableLabelLines(cableData, cablePdfFields, t, language);
+  const showCalcSteps = useSettingsStore((s) => s.showCalcSteps);
+  const labelLines = getCableLabelLines(
+    cableData,
+    cablePdfFields,
+    t,
+    language,
+    showCalcSteps ? explainNetwork(nodes, edges, language).get(id) : undefined,
+  );
 
   // Placement is solved for the whole diagram at once so the boxes can be kept
   // apart; this edge just reads its own slot out of the shared result.
   const placement = useMemo(
-    () => computeCableLabelPlacements(nodes, edges, language).get(id),
-    [nodes, edges, language, id],
+    () => computeCableLabelPlacements(nodes, edges, language, showCalcSteps).get(id),
+    [nodes, edges, language, showCalcSteps, id],
   );
 
   const hasInfoLabel = labelLines.length > 0;
@@ -370,7 +378,7 @@ export function WireEdge({
             }}
           >
             {labelLines.map((line) => (
-              <div key={line.key} className={line.className}>
+              <div key={line.key} className={line.className} title={line.title}>
                 {line.text}
               </div>
             ))}

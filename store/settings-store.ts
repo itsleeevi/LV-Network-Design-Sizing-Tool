@@ -7,6 +7,10 @@ type SettingsStore = {
   language: Language;
   setLanguage: (language: Language) => void;
 
+  /** Show the step-by-step breakdown of calculated values in the sidebar. */
+  showCalcSteps: boolean;
+  setShowCalcSteps: (value: boolean) => void;
+
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
 };
@@ -19,13 +23,19 @@ export const useSettingsStore = create<SettingsStore>()(
       language: "hu",
       setLanguage: (language) => set({ language }),
 
+      showCalcSteps: false,
+      setShowCalcSteps: (showCalcSteps) => set({ showCalcSteps }),
+
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
     }),
     {
       name: SETTINGS_STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({ language: state.language }),
+      partialize: (state) => ({
+        language: state.language,
+        showCalcSteps: state.showCalcSteps,
+      }),
       skipHydration: true,
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
