@@ -205,7 +205,7 @@ function CabinetInfo({
               {ratio > 0 && (
                 <>
                   {" • "}
-                  {formatLocaleNumber(ratio, language, 2)}
+                  {formatLocaleNumber(ratio, language, 2)}%
                 </>
               )}
             </div>

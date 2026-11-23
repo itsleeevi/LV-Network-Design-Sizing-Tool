@@ -358,7 +358,7 @@ function explainCabinet(
     label: t("calc.voltageDropRatio"),
     formula: "ΣΔU / é",
     substitution: `${s(d.cumulativeVoltageDropV)} / ${s(allowedV)}`,
-    result: r(d.cumulativeVoltageDropRatio),
+    result: `${r(d.cumulativeVoltageDropRatio)} %`,
     note: `${allowed.formula} = ${allowed.substitution} = ${r(allowedV)} V. ${t(
       "explain.dropRatioNote",
     )}`,

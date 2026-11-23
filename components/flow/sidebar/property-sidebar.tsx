@@ -305,7 +305,7 @@ function CabinetProperties({
             <div className="text-sm">
               {t("calc.voltageDropRatio")}:{" "}
               <span className="font-medium">
-                {formatCalc(data.cumulativeVoltageDropRatio, language)}
+                {formatCalc(data.cumulativeVoltageDropRatio, language)} %
               </span>
             </div>
           )}
