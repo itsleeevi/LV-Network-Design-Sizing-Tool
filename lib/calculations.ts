@@ -12,6 +12,8 @@ import {
   DESIGN_CURRENT_SAFETY_FACTOR,
   DEFAULT_MAX_CURRENT_DENSITY_A_PER_MM2,
   FUSE_CURRENT_DIVISOR,
+  RATIO_VOLTAGE_DROP_PERCENT,
+  REFERENCE_VOLTAGE_DROP_PERCENT,
 } from "@/types/electrical";
 
 const SORTED_CROSS_SECTIONS: number[] = [...CABLE_CROSS_SECTIONS].sort(
@@ -202,6 +204,16 @@ export function runCalculations(
     allowedDropPercent,
     phaseMode,
   );
+  const referenceDropV = calculateAllowedVoltageDropV(
+    systemVoltage,
+    REFERENCE_VOLTAGE_DROP_PERCENT,
+    phaseMode,
+  );
+  const ratioDropV = calculateAllowedVoltageDropV(
+    systemVoltage,
+    RATIO_VOLTAGE_DROP_PERCENT,
+    phaseMode,
+  );
   // Design-current mode ("mértékadó áram", Rack workbook G column, e.g.
   // `+G24*(1.2)/3`): each cable carries the downstream raw device total
   // scaled by the safety factor and split across the phases. The 1F case has
@@ -332,12 +344,18 @@ export function runCalculations(
     const area = effectiveCrossSection(crossSection, parallelCount);
 
     const loopImpedance = calculateLoopImpedance(length, area);
-    const voltageDropV = calculateVoltageDropV(
-      length,
-      area,
-      current,
-      phaseMode,
-    );
+    // The 0.4 kV supply cable (utility supply to main meter) is outside the
+    // designed network: it adds to the loop impedance (and so to every Iz
+    // downstream) but takes none of the voltage drop budget é and is not
+    // sized by the recommendation. The Excel reference networks start at a
+    // cable from the utility supply straight to a distributor, which stays
+    // a normal cable.
+    const childType = nodes.find((n) => n.id === nodeId)?.type;
+    const isSupplyCable =
+      parentId === sourceNode.id && (childType === "feed" || childType === "fm");
+    const voltageDropV = isSupplyCable
+      ? 0
+      : calculateVoltageDropV(length, area, current, phaseMode);
     const voltageDropPercent = calculateVoltageDropPercent(
       voltageDropV,
       systemVoltage,
@@ -359,6 +377,29 @@ export function runCalculations(
       parallelCount;
     // Excel "Iz" (Q column) is per-cable: 230 V / that cable's own loop impedance.
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
+
+    if (isSupplyCable) {
+      edgeDataMap.set(edgeId, {
+        current,
+        allowedVoltageDropV: undefined,
+        requiredCrossSection: undefined,
+        recommendedCrossSection: undefined,
+        networkRequiredCrossSection: undefined,
+        networkRequiredCrossSectionReason: undefined,
+        recommendedGradedUp: undefined,
+        impedance: loopImpedance,
+        voltageDropV: 0,
+        voltageDropPercent: 0,
+        shortCircuitCurrent,
+      });
+      cumulativeVoltageDrop.set(nodeId, cumulativeVoltageDrop.get(parentId) || 0);
+      cumulativeVoltageDropV.set(nodeId, cumulativeVoltageDropV.get(parentId) || 0);
+      cumulativeImpedance.set(
+        nodeId,
+        (cumulativeImpedance.get(parentId) || 0) + loopImpedance,
+      );
+      continue;
+    }
 
     // Geometry and load are all the recommendation pass below needs: the
     // current a cable carries depends only on the downstream devices, not on
@@ -508,7 +549,8 @@ export function runCalculations(
   // postOrder settles children before their parent.
   for (const nodeId of postOrder) {
     const edgeId = edgeToChild.get(nodeId);
-    if (!edgeId) continue;
+    // The supply cable is not in edgeLoads and gets no recommendation.
+    if (!edgeId || !edgeLoads.has(edgeId)) continue;
     let maxChild = 0;
     for (const childId of children.get(nodeId) || []) {
       const childEdgeId = edgeToChild.get(childId);
@@ -638,11 +680,15 @@ export function runCalculations(
     const loopImpedance = cumulativeImpedance.get(node.id) ?? 0;
     const shortCircuitCurrent = calculateShortCircuitCurrent(loopImpedance);
     const voltageDropV = cumulativeVoltageDropV.get(node.id) || 0;
-    // Shown as the share of the allowed drop é already used on the path from
-    // the source (e.g. 3.63 V / 6.93 V = 52 %). Deliberately not the Excel
-    // "Fesz esés összesen" column (ΔU / U); that per-cable sum is still used
-    // internally by the recommendation pass.
-    const voltageDrop = allowedDropV > 0 ? (voltageDropV / allowedDropV) * 100 : 0;
+    // Two views of the path drop from the source, both deliberately not the
+    // Excel "Fesz esés összesen" column (ΔU / U; that per-cable sum is still
+    // used internally by the recommendation pass):
+    // - ratio over é at the fixed 1 % (e.g. 3.63 V / 1.73 V = 2.10),
+    // - share of é at the fixed 4 % reference (e.g. 3.63 V / 6.93 V = 52 %).
+    // Neither follows the network or per-cable ε.
+    const voltageDropRatio = ratioDropV > 0 ? voltageDropV / ratioDropV : 0;
+    const voltageDrop =
+      referenceDropV > 0 ? (voltageDropV / referenceDropV) * 100 : 0;
     const maxFuseRating = calculateMaxFuseRating(shortCircuitCurrent);
 
     return {
@@ -654,6 +700,7 @@ export function runCalculations(
         loopImpedance,
         shortCircuitCurrent,
         cumulativeVoltageDrop: voltageDrop,
+        cumulativeVoltageDropRatio: voltageDropRatio,
         cumulativeVoltageDropV: voltageDropV,
         cumulativeVoltageDropLimit: 100,
         maxFuseRating,

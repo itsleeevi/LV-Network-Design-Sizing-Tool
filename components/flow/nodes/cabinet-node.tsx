@@ -197,22 +197,34 @@ function CabinetInfo({
         data.cumulativeVoltageDropV !== undefined &&
         data.cumulativeVoltageDropV > 0 &&
         (() => {
-          const percent = data.cumulativeVoltageDrop ?? 0;
+          const ratio = data.cumulativeVoltageDropRatio ?? 0;
           return (
             <div className="font-medium text-blue-600">
               {t("calc.voltageDrop")}:{" "}
               {formatLocaleNumber(data.cumulativeVoltageDropV, language, 2)} V
-              {percent > 0 && (
+              {ratio > 0 && (
                 <>
                   {" • "}
-                  {formatLocaleNumber(percent, language, 2)}%
+                  {formatLocaleNumber(ratio, language, 2)}
                 </>
               )}
             </div>
           );
         })()}
       {show("voltageDrop") && data.cumulativeVoltageDropV ? (
-        <CalcSteps explanation={explanation} stepKeys={["dropV", "dropPercent"]} />
+        <CalcSteps explanation={explanation} stepKeys={["dropV", "dropRatio"]} />
+      ) : null}
+      {show("voltageDrop") &&
+        data.cumulativeVoltageDropV !== undefined &&
+        data.cumulativeVoltageDropV > 0 &&
+        (data.cumulativeVoltageDrop ?? 0) > 0 && (
+          <div className="font-medium text-blue-600">
+            {t("calc.voltageDropAt4")}:{" "}
+            {formatLocaleNumber(data.cumulativeVoltageDrop ?? 0, language, 2)}%
+          </div>
+        )}
+      {show("voltageDrop") && data.cumulativeVoltageDropV ? (
+        <CalcSteps explanation={explanation} stepKeys={["dropPercent"]} />
       ) : null}
       {show("loopImpedance") &&
         data.loopImpedance !== undefined &&

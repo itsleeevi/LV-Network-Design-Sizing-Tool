@@ -301,9 +301,17 @@ function CabinetProperties({
               </span>
             </div>
           )}
+          {data.cumulativeVoltageDropRatio !== undefined && (
+            <div className="text-sm">
+              {t("calc.voltageDropRatio")}:{" "}
+              <span className="font-medium">
+                {formatCalc(data.cumulativeVoltageDropRatio, language)}
+              </span>
+            </div>
+          )}
           {data.cumulativeVoltageDrop !== undefined && (
             <div className="text-sm">
-              {t("calc.voltageDrop")}:{" "}
+              {t("calc.voltageDropAt4")}:{" "}
               <span className="font-medium">
                 {formatCalc(data.cumulativeVoltageDrop, language)} %
               </span>

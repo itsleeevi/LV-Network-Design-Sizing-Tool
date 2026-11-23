@@ -41,7 +41,7 @@ Excel sheet names (`3F`, `1. körzet`) and Excel row labels (`Hurok IMP`, `Iz`, 
 ## Architecture Map
 
 - `app/` : Next.js App Router entry point (`page.tsx` just renders `FlowCanvas`).
-- `components/flow/canvas/` : the React Flow canvas, toolbar, menu, legend, welcome screen, and `placement-layer.tsx` (the ghost preview and click handling for dropping a new element where the user clicks).
+- `components/flow/canvas/` : the React Flow canvas, toolbar, menu, legend, welcome screen, `placement-layer.tsx` (the ghost preview and click handling for dropping a new element where the user clicks), and `network-minimap.tsx` (the overview map: every element and cable, the visible area, and in red the cabinets over the allowed voltage drop in the last calculation; click an element to select it and jump there).
 - `components/flow/nodes/` : one component per electrical element type (`asz-node.tsx`, `fm-node.tsx`, `fe-node.tsx`, `cabinet-node.tsx`, `feed-node.tsx`), plus shared schematic port rendering.
 - `components/flow/edges/wire-edge.tsx` : cable rendering, including on-canvas calculated-value labels.
 - `components/flow/sidebar/property-sidebar.tsx` : the right-hand property editor for whatever node/edge is selected.
@@ -52,6 +52,8 @@ Excel sheet names (`3F`, `1. körzet`) and Excel row labels (`Hurok IMP`, `Iz`, 
 - `lib/auto-layout.ts` : lays out the whole network from the utility supply when Auto-layout is triggered, so every cable is drawn at a consistent length (compact trunk hops, uniform wide cabinet-to-cabinet hops).
 - `lib/placement.ts` : grid snapping and overlap test for click-to-place, so a new element lands centered on the cursor and clear of the existing symbols.
 - `lib/cabinet-label-placement.ts` : picks which side of a node symbol to place its label on, avoiding the side a wire is attached to.
+- `lib/wire-path.ts` : orthogonal cable routing, shared by `wire-edge.tsx` and the minimap so both draw the same elbow.
+- `lib/network-status.ts` : which cabinets are over the é of the cable feeding them in the last calculation (the limit Recommended is solved against), used by the minimap.
 - `lib/cable-label.ts` : builds the lines of a cable's on-canvas info box and estimates its rendered size. Single source of truth for that label: `wire-edge.tsx` renders these lines and `cable-label-placement.ts` measures them, so the two cannot drift apart.
 - `lib/cable-label-placement.ts` : decides where each cable's info box goes (which side of the wire, how far along) so the boxes miss each other, the node symbols, and the nodes' own labels. Solved for the whole diagram in one deterministic pass, since each wire renders independently but must agree on the result.
 - `lib/pdf-export.ts` : rasterizes the live canvas and legend to PNG (`html-to-image`) and composes a print-ready PDF (`jsPDF`).

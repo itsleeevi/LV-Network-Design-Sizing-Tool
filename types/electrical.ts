@@ -25,8 +25,17 @@ export type CabinetNodeData = {
   loopImpedance?: number;
   /** Short-circuit current at this point [A] */
   shortCircuitCurrent?: number;
-  /** Cumulative voltage drop to this point as a share of the allowed drop é [%] (cumulativeVoltageDropV / é × 100) */
+  /**
+   * Cumulative voltage drop to this point as a share of é at the fixed
+   * reference ε = REFERENCE_VOLTAGE_DROP_PERCENT [%] (cumulativeVoltageDropV / é(4 %) × 100),
+   * independent of the utility supply's configured allowed drop.
+   */
   cumulativeVoltageDrop?: number;
+  /**
+   * Cumulative voltage drop to this point over é at the fixed
+   * ε = RATIO_VOLTAGE_DROP_PERCENT, as a plain ratio (cumulativeVoltageDropV / é(1 %)).
+   */
+  cumulativeVoltageDropRatio?: number;
   /** Cumulative voltage drop to this point [V] */
   cumulativeVoltageDropV?: number;
   /** Allowed cumulative voltage drop on the cumulativeVoltageDrop scale [%]: always 100 (all of é used). */
@@ -52,6 +61,12 @@ export type CabinetNodeData = {
  */
 export const FUSE_CURRENT_DIVISOR = 8;
 
+/** Fixed ε [%] for the cabinet "voltage drop at 4 %" share, whatever ε the network is designed to. */
+export const REFERENCE_VOLTAGE_DROP_PERCENT = 4;
+
+/** Fixed ε [%] for the cabinet ΣΔU / é ratio, whatever ε the network is designed to. */
+export const RATIO_VOLTAGE_DROP_PERCENT = 1;
+
 /**
  * Phase mode for the whole network.
  * - "3F": three-phase (400 V, √3 factor) — the "1. körzet" / "3F" Excel sheets.
@@ -62,7 +77,7 @@ export type PhaseMode = "1F" | "3F";
 /** ÁSZ (Áramszolgáltató) node data */
 export type AszNodeData = {
   title: string;
-  /** Grid short-circuit power [MVA] - typically 500 */
+  /** Grid short-circuit power [kVA]. Stored and edited only; no calculation uses it. */
   shortCircuitPower: number;
   /** System voltage [V] - typically 400 (3-phase) or 230 (1-phase) */
   voltage: number;

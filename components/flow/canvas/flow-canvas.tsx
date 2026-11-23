@@ -4,7 +4,6 @@ import {
   ReactFlow,
   Background,
   Controls,
-  MiniMap,
   Panel,
   applyEdgeChanges,
   applyNodeChanges,
@@ -25,6 +24,7 @@ import { NodeInternalsSync } from "./node-internals-sync";
 import { ToolbarPanel } from "./toolbar-panel";
 import { MenuPanel } from "./menu-panel";
 import { PlacementLayer } from "./placement-layer";
+import { NetworkMiniMap } from "./network-minimap";
 import { WelcomeScreen } from "./welcome-screen";
 import { PropertySidebar } from "../sidebar/property-sidebar";
 import { cn } from "@/lib/utils";
@@ -196,7 +196,7 @@ export function FlowCanvas() {
           <NodeInternalsSync />
           <Background />
           <Controls />
-          <MiniMap />
+          <NetworkMiniMap />
         </ReactFlow>
       </div>
       <PropertySidebar />

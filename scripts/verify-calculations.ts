@@ -53,8 +53,9 @@
 import type { Node, Edge } from "@xyflow/react";
 import { runCalculations } from "@/lib/calculations";
 
-// Cabinet cumulativeVoltageDrop is the share of é used (ΔU [V] / é × 100), a
-// deliberate departure from the Excel "Fesz esés összesen" column (ΔU / U).
+// Cabinet cumulativeVoltageDrop is the share of é at the fixed 4 % reference
+// (ΔU [V] / é(4 %) × 100), a deliberate departure from the Excel
+// "Fesz esés összesen" column (ΔU / U).
 // Both reference networks are 3F, 400 V, ε = 4 %: é = 0.75 × 400 × 0.04 / √3.
 const E_ALLOWED_V = (0.75 * 400 * 0.04) / Math.sqrt(3);
 // Excel ΔU% (of 400 V) converted to the share-of-é scale.

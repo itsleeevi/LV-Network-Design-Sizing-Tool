@@ -93,6 +93,8 @@ const hu = {
   "calc.current": "Áram [A]",
   "calc.totalCurrent": "Áram összesen [A]",
   "calc.voltageDrop": "Fesz. esés",
+  "calc.voltageDropAt4": "Fesz. esés 4%-ra",
+  "calc.voltageDropRatio": "Fesz. esés 1%-ra (ΣΔU / é)",
   "calc.loopImpedance": "Hurok IMP",
   "calc.iz": "Iz [A]",
   "calc.maxFuse": "Bizt [A]",
@@ -113,7 +115,9 @@ const hu = {
     "Saját áram + a mögöttes szekrények árama, mértékadó áram szorzó nélkül.",
   "explain.path": "Útvonal",
   "explain.sharePercentNote":
-    "A % azt mutatja, hogy a megengedett é feszültségesés hányad része fogyott el az ÁSZ-tól idáig (100% = határ).",
+    "A % azt mutatja, hogy a 4%-os ε-hoz tartozó é feszültségesés hányad része fogyott el az ÁSZ-tól idáig (100% = határ), a beállított megengedett feszültségeséstől függetlenül.",
+  "explain.dropRatioNote":
+    "Az ÁSZ-tól idáig összegzett feszültségesés és az 1%-os ε-hoz tartozó é aránya, a beállított megengedett feszültségeséstől függetlenül.",
   "explain.recommendedFormula": "Teljes hálózatra számolt szabványos méret",
   "explain.recommendedNote":
     "Minden kábel a hőterhelési alsó határról indul; amíg valamelyik szekrény ΣΔU értéke nagyobb é-nél, az útvonalon a legtöbb voltot nyerő kábel egy szabványos mérettel nő. Végül egy kábel sem vékonyabb az általa táplált kábeleknél.",
@@ -126,7 +130,7 @@ const hu = {
   "asz.phase3": "Háromfázisú (3F · 400 V)",
   "asz.phase1": "Egyfázisú (1F · 230 V)",
   "asz.voltage": "Hálózati feszültség (V)",
-  "asz.scPower": "Rövidzárlati teljesítmény (MVA)",
+  "asz.scPower": "Rövidzárlati teljesítmény (kVA)",
   "asz.allowedDrop": "Megengedett feszültségesés ε [%]",
   "asz.useDesignCurrent": "Mértékadó áram számítása",
   "asz.useDesignCurrentHint":
@@ -181,6 +185,8 @@ const hu = {
   "canvas.minCrossSection": "Min. keresztm.",
   "canvas.calculatedCrossSection": "Szükséges min.",
   "canvas.recommendedCrossSection": "Javasolt",
+  "minimap.ariaLabel": "Áttekintő térkép",
+  "minimap.overDrop": "Túllépi a megengedett feszültségesést",
   "reason.current": "áram alapján",
   "reason.voltageDrop": "feszültségesés alapján",
   "reason.grading": "lépcsőzetesség miatt",
@@ -285,6 +291,8 @@ const en: Record<TranslationKey, string> = {
   "calc.current": "Current [A]",
   "calc.totalCurrent": "Total current [A]",
   "calc.voltageDrop": "Voltage drop",
+  "calc.voltageDropAt4": "Voltage drop at 4%",
+  "calc.voltageDropRatio": "Voltage drop at 1% (ΣΔU / é)",
   "calc.loopImpedance": "Loop imp.",
   "calc.iz": "Isc [A]",
   "calc.maxFuse": "Max fuse [A]",
@@ -305,7 +313,9 @@ const en: Record<TranslationKey, string> = {
     "Own current + downstream cabinets, without the design current factor.",
   "explain.path": "Path",
   "explain.sharePercentNote":
-    "The % is the share of the allowed drop é used from the US to here (100% = limit).",
+    "The % is the share of é at ε = 4% used from the US to here (100% = limit), whatever allowed drop is set.",
+  "explain.dropRatioNote":
+    "Drop summed from the US to here over é at ε = 1%, whatever allowed drop is set.",
   "explain.recommendedFormula": "Standard size solved for the whole network",
   "explain.recommendedNote":
     "Every cable starts at the thermal floor; while any cabinet's ΣΔU exceeds é, the path cable that saves the most volts steps up one standard size. Finally no cable is thinner than a cable it feeds.",
@@ -318,7 +328,7 @@ const en: Record<TranslationKey, string> = {
   "asz.phase3": "Three-phase (400 V)",
   "asz.phase1": "Single-phase (230 V)",
   "asz.voltage": "Mains voltage (V)",
-  "asz.scPower": "Short-circuit power (MVA)",
+  "asz.scPower": "Short-circuit power (kVA)",
   "asz.allowedDrop": "Allowed voltage drop ε [%]",
   "asz.useDesignCurrent": "Use design current",
   "asz.useDesignCurrentHint":
@@ -373,6 +383,8 @@ const en: Record<TranslationKey, string> = {
   "canvas.minCrossSection": "Min. cross-sec.",
   "canvas.calculatedCrossSection": "Required min.",
   "canvas.recommendedCrossSection": "Recommended",
+  "minimap.ariaLabel": "Overview map",
+  "minimap.overDrop": "Over the allowed voltage drop",
   "reason.current": "based on current",
   "reason.voltageDrop": "based on voltage drop",
   "reason.grading": "due to grading",

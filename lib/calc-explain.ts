@@ -9,6 +9,8 @@ import {
   CABLE_RESISTIVITY,
   DESIGN_CURRENT_SAFETY_FACTOR,
   FUSE_CURRENT_DIVISOR,
+  RATIO_VOLTAGE_DROP_PERCENT,
+  REFERENCE_VOLTAGE_DROP_PERCENT,
 } from "@/types/electrical";
 import {
   PHASE_VOLTAGE,
@@ -347,17 +349,34 @@ function explainCabinet(
 
   const allowedV = calculateAllowedVoltageDropV(
     ctx.voltage,
-    ctx.allowedPercent,
+    RATIO_VOLTAGE_DROP_PERCENT,
     ctx.phaseMode,
   );
-  const allowed = allowedDropSteps(ctx, ctx.allowedPercent);
+  const allowed = allowedDropSteps(ctx, RATIO_VOLTAGE_DROP_PERCENT);
+  steps.push({
+    key: "dropRatio",
+    label: t("calc.voltageDropRatio"),
+    formula: "ΣΔU / é",
+    substitution: `${s(d.cumulativeVoltageDropV)} / ${s(allowedV)}`,
+    result: r(d.cumulativeVoltageDropRatio),
+    note: `${allowed.formula} = ${allowed.substitution} = ${r(allowedV)} V. ${t(
+      "explain.dropRatioNote",
+    )}`,
+  });
+
+  const referenceV = calculateAllowedVoltageDropV(
+    ctx.voltage,
+    REFERENCE_VOLTAGE_DROP_PERCENT,
+    ctx.phaseMode,
+  );
+  const reference = allowedDropSteps(ctx, REFERENCE_VOLTAGE_DROP_PERCENT);
   steps.push({
     key: "dropPercent",
-    label: `${t("calc.voltageDrop")} [%]`,
+    label: `${t("calc.voltageDropAt4")} [%]`,
     formula: "ΔU% = ΣΔU / é × 100",
-    substitution: `${s(d.cumulativeVoltageDropV)} / ${s(allowedV)} × 100`,
+    substitution: `${s(d.cumulativeVoltageDropV)} / ${s(referenceV)} × 100`,
     result: `${r(d.cumulativeVoltageDrop)} %`,
-    note: `${allowed.formula} = ${allowed.substitution} = ${r(allowedV)} V. ${t(
+    note: `${reference.formula} = ${reference.substitution} = ${r(referenceV)} V. ${t(
       "explain.sharePercentNote",
     )}`,
   });
